@@ -1,4 +1,4 @@
-# Install and start nginx and passenger.
+# Install nginx and passenger.
 
 platform_version = node['platform_version']
 ubuntu_name =
@@ -11,11 +11,11 @@ ubuntu_name =
     raise "Untested ubuntu version '#{platform_version}'"
   end
 
-bash 'nginx_install' do
+bash 'nginx_passenger' do
   code <<-EOT
     exec >>~/chef.log 2>&1
     chmod a+w ~/chef.log
-    echo -e "===\nLog nginx_install began `date`\n"
+    echo -e "===\nLog nginx_passenger began `date`\n"
 
     apt-key adv \
       --keyserver hkp://keyserver.ubuntu.com:80 \
@@ -93,6 +93,6 @@ bash 'nginx-ended' do
   code <<-EOT
     exec >>~/chef.log 2>&1
     chmod a+w ~/chef.log
-    echo -e "\nLog nginx_install ended `date`"
+    echo -e "\nLog nginx_passenger ended `date`"
   EOT
 end

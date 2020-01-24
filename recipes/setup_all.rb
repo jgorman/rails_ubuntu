@@ -1,11 +1,11 @@
-# Set up rails on ubuntu.
+# Run all recipes.
 
-include_recipe '::bash_aliases'
-include_recipe '::apt_upgrade'
-include_recipe '::apt_install'
-include_recipe '::ripgrep_install'
-include_recipe '::ruby_install'
-include_recipe '::nodejs_install'
-include_recipe '::redis_install'
-include_recipe '::nginx_install'
-include_recipe '::db_install'
+include_recipe 'rails_ubuntu::bash_aliases'
+include_recipe 'rails_ubuntu::apt_upgrade'
+include_recipe 'rails_ubuntu::apt_install'
+include_recipe 'rails_ubuntu::ripgrep'
+include_recipe 'rails_ubuntu::ruby'
+include_recipe 'rails_ubuntu::node'
+include_recipe 'rails_ubuntu::redis'
+include_recipe 'rails_ubuntu::nginx_passenger'
+include_recipe 'rails_ubuntu::database'

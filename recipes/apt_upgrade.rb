@@ -1,4 +1,4 @@
-# Get a fresh server up to date before installing everything.
+# Upgrade all packages.
 #
 # apt-get upgrade will hang while prompting the user for the console encoding.
 #

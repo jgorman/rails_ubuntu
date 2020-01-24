@@ -1,7 +1,7 @@
-# Set up activity-timer on ubuntu.
+# Wrapper example.
 
-set(:app_name,    'activity-timer')
-set(:db_user,     'rails')
-set(:db_password, 'rails123')
+node.default['rails_ubuntu']['app_name']    = 'activity-timer'
+node.default['rails_ubuntu']['db_user']     = 'rails'
+node.default['rails_ubuntu']['db_password'] = 'rails123'
 
-include_recipe '::setup_all'
+include_recipe 'rails_ubuntu::setup_all'

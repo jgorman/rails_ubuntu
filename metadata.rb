@@ -2,7 +2,7 @@ name 'rails_ubuntu'
 maintainer 'John Gorman'
 maintainer_email 'john@johngorman.io'
 license 'MIT'
-description 'Ubuntu setup for Rails deployment using Capistrano.'
+description 'Provision Ubuntu for Rails deployment using Capistrano.'
 version '0.1.0'
 chef_version '>= 14.0'
 

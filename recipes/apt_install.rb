@@ -1,4 +1,4 @@
-# Install apt packages to build ruby.
+# Apt packages to build ruby.
 
 bash "apt_install" do
   code <<-EOT

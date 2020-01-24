@@ -1,10 +1,10 @@
-# Install nodejs and yarn.
+# Install node and yarn.
 
-bash "nodejs_install" do
+bash "node" do
   code <<-EOT
     exec >>~/chef.log 2>&1
     chmod a+w ~/chef.log
-    echo -e "===\nLog nodejs_install began `date`\n"
+    echo -e "===\nLog node began `date`\n"
 
     curl -sL https://deb.nodesource.com/setup_#{get(:node_version)}.x | bash -
 
@@ -15,6 +15,6 @@ bash "nodejs_install" do
     apt-get update
     apt-get install -y -qq nodejs yarn
 
-    echo -e "\nLog nodejs_install ended `date`"
+    echo -e "\nLog node ended `date`"
   EOT
 end

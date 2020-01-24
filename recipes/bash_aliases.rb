@@ -1,4 +1,4 @@
-# Add some bash aliases to root and the deploy user.
+# Add bash aliases to the root and deploy users.
 
 default_aliases = <<EOT
 alias l='ls -l'
