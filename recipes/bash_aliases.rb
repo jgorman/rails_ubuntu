@@ -1,5 +1,7 @@
 # Add bash aliases to the root and deploy users.
 
+return if skip_recipe
+
 default_aliases = <<EOT
 alias l='ls -l'
 alias la='ls -la'

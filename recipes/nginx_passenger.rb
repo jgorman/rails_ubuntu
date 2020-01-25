@@ -1,22 +1,26 @@
 # Install nginx and passenger.
 
+# https://www.phusionpassenger.com/library/install/nginx/install/oss/
+
+return if skip_recipe
+
+log_msg('began')
+
 platform_version = node['platform_version']
 ubuntu_name =
   case platform_version
   when '16.04'
     'xenial'
-  when '18.04'
+  when '18.04', '20.04'
     'bionic'
   else
-    raise "Untested ubuntu version '#{platform_version}'"
+    raise "Untested Ubuntu version '#{platform_version}'"
   end
+
+deploy_to = get(:deploy_to) || "/home/#{get(:deploy_user)}/#{get(:app_name)}"
 
 bash 'nginx_passenger' do
   code <<-EOT
-    exec >>~/chef.log 2>&1
-    chmod a+w ~/chef.log
-    echo -e "===\nLog nginx_passenger began `date`\n"
-
     apt-key adv \
       --keyserver hkp://keyserver.ubuntu.com:80 \
       --recv-keys 561F9B9CAC40B2F7
@@ -32,10 +36,9 @@ case platform_version
 when '16.04'
   bash 'nginx-16.04' do
     code <<-EOT
-      exec >>~/chef.log 2>&1
-      chmod a+w ~/chef.log
-      echo -e "\nRunning nginx-xenial `date`"
+      #{bash_began('nginx-16.04')}
       apt-get install -y -qq nginx-extras passenger
+      #{bash_ended('nginx-16.04')}
     EOT
   end
 
@@ -52,16 +55,15 @@ when '16.04'
     line "passenger_ruby /home/#{get(:deploy_user)}/.rbenv/shims/ruby;"
   end
 
-when '18.04'
+when '18.04', '20.04'
   bash 'nginx-18.04' do
     code <<-EOT
-      exec >>~/chef.log 2>&1
-      chmod a+w ~/chef.log
-      echo -e "\nRunning nginx-bionic `date`"
+      #{bash_began('nginx-18.04')}
       apt-get install -y -qq nginx-extras libnginx-mod-http-passenger
       [ -f /etc/nginx/modules-enabled/50-mod-http-passenger.conf ] ||
         ln -s /usr/share/nginx/modules-available/mod-http-passenger.load \
           /etc/nginx/modules-enabled/50-mod-http-passenger.conf
+      #{bash_ended('nginx-18.04')}
     EOT
   end
 
@@ -73,7 +75,7 @@ when '18.04'
   end
 
 else
-  raise "Untested ubuntu version '#{platform_version}'"
+  raise "Untested Ubuntu version '#{platform_version}'"
 end
 
 file '/etc/nginx/sites-enabled/default' do
@@ -82,6 +84,7 @@ end
 
 template "/etc/nginx/sites-enabled/#{get(:app_name)}" do
   helper(:get) {|key| node[@cookbook_name][key] }
+  helper(:deploy_to) { "#{deploy_to}" }
   source "nginx_site.erb"
 end
 
@@ -89,10 +92,4 @@ service 'nginx' do
   action [ :enable, :start ]
 end
 
-bash 'nginx-ended' do
-  code <<-EOT
-    exec >>~/chef.log 2>&1
-    chmod a+w ~/chef.log
-    echo -e "\nLog nginx_passenger ended `date`"
-  EOT
-end
+log_msg('ended')

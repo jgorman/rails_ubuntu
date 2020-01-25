@@ -39,7 +39,7 @@
 #
 #####
 
-class Chef::Recipe
+module ::RailsUbuntuHelpers
 
   def get(key)
     node[@cookbook_name][key]
@@ -51,26 +51,15 @@ class Chef::Recipe
 
 end
 
+class Chef::Recipe
+  include ::RailsUbuntuHelpers
+end
+
 class Chef::Resource::Bash
-
-  def get(key)
-    node[@cookbook_name][key]
-  end
-
-  def set(key, value)
-    node.default[@cookbook_name][key] = value
-  end
+  include ::RailsUbuntuHelpers
 
 end
 
 class Chef::Resource::File
-
-  def get(key)
-    node[@cookbook_name][key]
-  end
-
-  def set(key, value)
-    node.default[@cookbook_name][key] = value
-  end
-
+  include ::RailsUbuntuHelpers
 end

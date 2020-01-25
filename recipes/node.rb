@@ -1,10 +1,10 @@
 # Install node and yarn.
 
+return if skip_recipe
+
 bash "node" do
   code <<-EOT
-    exec >>~/chef.log 2>&1
-    chmod a+w ~/chef.log
-    echo -e "===\nLog node began `date`\n"
+    #{bash_began}
 
     curl -sL https://deb.nodesource.com/setup_#{get(:node_version)}.x | bash -
 
@@ -15,6 +15,6 @@ bash "node" do
     apt-get update
     apt-get install -y -qq nodejs yarn
 
-    echo -e "\nLog node ended `date`"
+    #{bash_ended}
   EOT
 end

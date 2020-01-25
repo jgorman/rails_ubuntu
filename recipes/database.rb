@@ -1,13 +1,13 @@
 # Install postgres or mysql.
 
-db_type = get(:db_type) || 'postgres'
+return if skip_recipe
 
-case db_type
+case get(:db_type)
 when 'postgres'
   include_recipe '::postgres'
 when 'mysql'
   raise "Recipe to install mysql not written yet."
   include_recipe '::mysql'
 else
-  raise "Unknown db_type '#{db_type}'"
+  log_msg('skipped')
 end

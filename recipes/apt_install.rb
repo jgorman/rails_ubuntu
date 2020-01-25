@@ -1,10 +1,10 @@
 # Apt packages to build ruby.
 
+return if skip_recipe
+
 bash "apt_install" do
   code <<-EOT
-    exec >>~/chef.log 2>&1
-    chmod a+w ~/chef.log
-    echo -e "===\nLog apt_install began `date`\n"
+    #{bash_began}
 
     apt-get update
     apt-get install -y -qq git-core build-essential software-properties-common \
@@ -12,6 +12,6 @@ bash "apt_install" do
       libssl-dev libxml2-dev libxslt1-dev libyaml-dev sqlite3 zlib1g-dev \
       vim curl apt-transport-https ca-certificates dirmngr gnupg
 
-    echo -e "\nLog apt_install ended `date`"
+    #{bash_ended}
   EOT
 end

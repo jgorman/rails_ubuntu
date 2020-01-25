@@ -6,12 +6,11 @@
 #
 # We set the console encoding to utf-8 and specify a non interactive upgrade.
 
+return if skip_recipe
+
 bash "apt_upgrade" do
   code <<-EOT
-    exec >>~/chef.log 2>&1
-    chmod a+w ~/chef.log
-    echo -e "===\nLog apt_upgrade began `date`\n"
-    echo HOME $HOME
+    #{bash_began}
 
     echo "console-setup console-setup/charmap47 select UTF-8" |
       debconf-set-selections
@@ -19,6 +18,6 @@ bash "apt_upgrade" do
     export DEBCONF_FRONTEND=noninteractive
     apt-get update && apt-get upgrade -y -qq
 
-    echo -e "\nLog apt_upgrade ended `date`"
+    #{bash_ended}
   EOT
 end

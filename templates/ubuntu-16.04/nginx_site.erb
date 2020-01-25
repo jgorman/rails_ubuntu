@@ -5,7 +5,7 @@ server {
   server_name <%= get(:server_name) %>;
   passenger_enabled on;
   rails_env production;
-  root /home/<%= get(:deploy_user) %>/<%= get(:app_name) %>/current/public;
+  root <%= deploy_to %>/current/public;
 
   # redirect server error pages to the static page /50x.html
   error_page   500 502 503 504  /50x.html;
