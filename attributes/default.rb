@@ -5,13 +5,13 @@ default['rails_ubuntu']['app_name']       = 'myapp'
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
 default['rails_ubuntu']['node_version']   = '12'
 
-default['rails_ubuntu']['deploy_user']    = 'deploy'
-default['rails_ubuntu']['deploy_group']   = 'deploy'
+default['rails_ubuntu']['deploy_user']    = 'vagrant'
+default['rails_ubuntu']['deploy_group']   = 'vagrant'
 # bash_aliases = bash_aliases || [l, la, lc, lt]
 
 # Leave db_type blank to skip database installation.
 # db_type = (postgres | mysql)
-# db_user = db_user || deploy_user
-default['rails_ubuntu']['db_password']    = 'deploy'
+# Set db_user and db_password to create the database user.
+# Set db_name to create the production database owned by db_user.
 
-# skip_recipes = "bash_aliases, redis"
+# skip_recipes = 'bash_aliases, redis'
