@@ -9,9 +9,9 @@ default['rails_ubuntu']['deploy_user']    = 'vagrant'
 default['rails_ubuntu']['deploy_group']   = 'vagrant'
 # bash_aliases = bash_aliases || [l, la, lc, lt]
 
-# Leave db_type blank to skip database installation.
+# Leave db_type blank to skip local database installation.
 # db_type = (postgres | mysql)
-# Set db_user and db_password to create the database user.
-# Set db_name to create the production database owned by db_user.
+# Set db_user, db_password and db_name to create
+# the empty production database owned by db_user.
 
 # skip_recipes = 'bash_aliases, redis'

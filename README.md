@@ -2,12 +2,14 @@
 
 A Chef cookbook to provision Ubuntu for Rails deployment using Capistrano.
 
+Capistrano is also excellent for running node applications.
+
 Modeled on the excellent Go Rails deployment guides.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
 
 - https://gorails.com/deploy/ubuntu/18.04
 
-Tested on Ubuntu 16.04, 18.04 and 20.04 beta.
+Tested on Ubuntu 16.04 and 18.04 with Postgres and Mysql.
 
 Here are three steps to a running Ubuntu Rails server.
 
@@ -21,11 +23,10 @@ and production servers!
 
 See below for more information.
 
-- Recipe Documentation
-- Attribute Defaults
-- Chef-Run Setup
-- Wrapper Cookbook Setup
-- Debugging Hints
+- [Recipe Documentation](#recipes)
+- [Attribute Defaults](#attributes)
+- [Wrapper Cookbooks](#wrapper-cookbooks)
+- [Chef-Run Setup](#chef-run)
 
 # <a id="deploy-user"></a>1. Add the Deploy User #
 
@@ -58,21 +59,30 @@ vagrant@vagrant-box $
 
 # 2. <a id="chef"></a>Run Chef to Provision the Server #
 
-Use the `chef-run` utility ...
-
 ```
-my@my-mac $ chef-run --user vagrant --password vagrant vagrant-box \
+me@my-mac $ chef-run --user vagrant --password vagrant vagrant-box \
   mycookbook::setup_vagrant_box
 ```
 
-See below for some `chef-run` setup hints.
-
-If you see a message like
+If you see the message
 `dpkg: error: dpkg status database is locked by another process`,
 this is Ubuntu running the post-boot automatic package upgrade.
-Just wait for this to complete and run the cookbook again.
+Wait for a few minutes for this to complete and try running the cookbook again.
 
-# 3. <a id="capistrano"></a> Run Capistrano to Install Rails #
+Most of the recipes run bash scripts to install and configure
+packages from outside of Ubuntu.
+
+In order to make sense of what is happening and to see
+errors the bash scripts all log to `~deploy/chef.log`.
+
+You can watch the provisioning process run on the target server in real time.
+
+```
+vagrant@vagrant-box ~ $ touch chef.log
+vagrant@vagrant-box ~ $ tail -f chef.log
+```
+
+# 3. <a id="capistrano"></a>Run Capistrano to Install Rails #
 
 Set up your Rails application for deployment with Capistrano.
 
@@ -82,41 +92,35 @@ deployment using this guide.
 https://gorails.com/deploy/ubuntu/18.04#capistrano
 
 ```
-my@my-mac $ bundle exec cap production deploy --hosts=vagrant-box
+my@my-mac myapp $ bundle exec cap production deploy --hosts=vagrant-box
 ```
 
-jj TODO: revisit this after mysql is running:
-
-If `db_name` is set, the `database` recipe will create an
-empty production database owned by `db_user`. This is necessary
-in order for `db:setup` to work, at least under Postgres.
-
-Because it too dangerous to automate, you must run any new database setup
+Because it too dangerous to automate, you must run the database setup
 tasks manually. For example.
 
 ```
-vagrant@vagrant-box $ cd /home/vagrant/activity_timer/current
+vagrant@vagrant-box $ cd /home/vagrant/myapp/current
 vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
 ```
 
 
-# Recipe Documentation
+# <a id="recipes"></a> Recipe Documentation #
 
-## `setup_all` - Run all recipes
+## `setup_all` - Run all recipes ##
 
 You can set the `skip_recipes` attribute to skip unnecessary items
-or copy this to a new recipe for customization.
+or copy this recipe to a new recipe for customization.
 
-## `apt_upgrade` - Upgrade all packages
+## `apt_upgrade` - Upgrade all packages ##
 
 Start with the latest package versions for security and stability.
 
-## `apt_install` - Apt packages to build ruby
+## `apt_install` - Apt packages to build Ruby ##
 
 Building a custom ruby gives us control over the exact ruby version and
 Capistrano can bundle the required gems while running as the deploy user.
 
-## `bash_aliases` - Add bash aliases to the root and deploy users
+## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
 For those of us with muscle memory.
 
@@ -131,7 +135,7 @@ alias lc='ls -C'
 alias lt='ls -lrt'
 ```
 
-## `ripgrep` - Install ripgrep
+## `ripgrep` - Install Ripgrep ##
 
 Useful for figuring out how things are configured
 in the application code and in the bundled gems.
@@ -140,47 +144,47 @@ in the application code and in the bundled gems.
 rg DATABASE_URL
 ```
 
-## `ruby` - Build ruby with rbenv
+## `ruby` - Build Ruby with Rbenv ##
 
 Attributes: `ruby_version`, `deploy_user`, `deploy_group`
 
-## `node` - Install node and yarn
+## `node` - Install Node and Yarn ##
 
 Attributes: `node_version`
 
-## `redis` - Install redis service
+## `redis` - Install Redis service ##
 
 Use this for Action Cable websocket support.
 
-## `nginx_passenger` - Install nginx and passenger
+## `nginx_passenger` - Install Nginx and Passenger ##
 
 Attributes: `server_name`, `app_name`, `deploy_user`
 
-## `database` - Install postgres or mysql
+## `database` - Install Postgres or Mysql and create database ##
 
 Attributes: `db_type` (postgres | mysql)
-
-Include the postgres or mysql recipe. If `db_type` is not
-set, skip database setup.
-
-## `postgres` - Install postgres and create user
-
 Attributes: `db_user`, `db_password`, `db_name`
 
-If `db_user` and `db_password` are set, create the role
-with the `createdb` permission.
+If `db_type` is not set, skip database setup.
 
-Capistrano for Postgres fails on db:setup unless the `db_user`
-has `createdb` permissions. jj TODO: follow up after mysql works.
+Set `db_user`, `db_password` and `db_name` to create
+the empty production database owned by `db_user`.
 
-If `db_name` is set, create the production database owned by `db_user`.
+## `postgres` - Install Postgres and create database ##
 
-## `setup_wrapper_example` - Wrapper example
+Can be called directly or by the `database` recipe.
+
+## `mysql` - Install Mysql and create database ##
+
+Can be called directly or by the `database` recipe.
+
+## `setup_wrapper_example` - Wrapper example ##
 
 An example of how to wrap and call the `rails_ubuntu` recipes
 from another cookbook.
 
-# Attribute Defaults
+
+# <a id="attributes"></a>Attribute Defaults #
 
 See `rails_ubuntu/attributes/defaults.rb`
 
@@ -192,34 +196,23 @@ default['rails_ubuntu']['app_name']       = 'myapp'
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
 default['rails_ubuntu']['node_version']   = '12'
 
-default['rails_ubuntu']['deploy_user']    = 'deploy'
-default['rails_ubuntu']['deploy_group']   = 'deploy'
+default['rails_ubuntu']['deploy_user']    = 'vagrant'
+default['rails_ubuntu']['deploy_group']   = 'vagrant'
 # bash_aliases = bash_aliases || [l, la, lc, lt]
 
-# Leave db_type blank to skip database installation.
+# Leave db_type blank to skip local database installation.
 # db_type = (postgres | mysql)
+# Set db_user, db_password and db_name to create
+# the empty production database owned by db_user.
 
-# Set db_user and db_password to create the user and run db:setup.
-
-# skip_recipes = "bash_aliases, redis"
+# skip_recipes = 'bash_aliases, redis'
 ```
 
-# Debugging Hints
 
-Most of the recipes run bash scripts to install and configure
-packages from outside of Ubuntu.
+# <a id="wrapper-cookbooks"></a>Wrapper Cookbooks #
 
-In order to make sense of what is happening and to see
-errors the bash scripts all log to `~deploy/chef.log`.
 
-You can watch the provisioning process run in real time.
-
-```
-touch chef.log
-tail -f chef.log
-```
-
-# Chef-run Hints
+# <a id="chef-run"></a>Chef-run Setup #
 
 The easiest way to test your wrapper configuration is to use
 `chef-run` to Vagrant boxes.
