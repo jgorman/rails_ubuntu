@@ -3,7 +3,6 @@
 # https://www.phusionpassenger.com/library/install/nginx/install/oss/
 
 return if skip_recipe
-
 log_msg('began')
 
 platform_version = node['platform_version']
@@ -27,7 +26,7 @@ bash 'nginx_passenger' do
 
     echo 'deb https://oss-binaries.phusionpassenger.com/apt/passenger #{ubuntu_name} main' > /etc/apt/sources.list.d/passenger.list
 
-    apt-get update
+    apt-get update -qq
   EOT
 end
 

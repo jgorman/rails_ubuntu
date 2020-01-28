@@ -16,7 +16,8 @@ bash "apt_upgrade" do
       debconf-set-selections
 
     export DEBCONF_FRONTEND=noninteractive
-    apt-get update && apt-get upgrade -y -qq
+    apt-get update -qq
+    apt-get upgrade -y -qq
 
     #{bash_ended}
   EOT

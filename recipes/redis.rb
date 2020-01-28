@@ -9,7 +9,7 @@ bash "redis" do
     [ -e /etc/apt/sources.list.d/chris-lea-ubuntu-redis-server-xenial.list ] ||
       add-apt-repository -y ppa:chris-lea/redis-server
 
-    apt-get update
+    apt-get update -qq
     apt-get install -y -qq redis-server redis-tools
 
     #{bash_ended}

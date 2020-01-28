@@ -12,7 +12,7 @@ bash "node" do
     echo "deb https://dl.yarnpkg.com/debian/ stable main" \
       > /etc/apt/sources.list.d/yarn.list
 
-    apt-get update
+    apt-get update -qq
     apt-get install -y -qq nodejs yarn
 
     #{bash_ended}

@@ -1,4 +1,4 @@
-# Install postgres, create user and database.
+# Install Postgres, create user and database.
 
 return if skip_recipe
 
@@ -10,32 +10,15 @@ bash "postgres" do
   code <<-EOT
     #{bash_began}
 
-    apt-get update
+    apt-get update -qq
     apt-get install -y -qq postgresql postgresql-contrib libpq-dev
 
     #{bash_ended}
   EOT
 end
 
-unless db_user && db_password
+unless db_user && db_password && db_name
   log_msg('skipped user and database creation')
-  return
-end
-
-bash "db_user" do
-  code <<-EOT
-    #{bash_began('db_user')}
-
-su - postgres -c psql <<-EOT2
-create user #{db_user} createdb password '#{db_password}';
-EOT2
-
-    #{bash_ended('db_user')}
-  EOT
-end
-
-unless db_name
-  log_msg('skipped database creation')
   return
 end
 
@@ -44,6 +27,7 @@ bash "db_create" do
     #{bash_began('db_create')}
 
 su - postgres -c psql <<-EOT2
+create user #{db_user} createdb password '#{db_password}';
 create database #{db_name} owner #{db_user};
 EOT2
 
