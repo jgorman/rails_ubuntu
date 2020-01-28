@@ -14,6 +14,7 @@ bash "mysql" do
     #{bash_began}
 
     apt-get update -qq
+    export DEBIAN_FRONTEND=noninteractive
     apt-get install -y -qq mysql-server mysql-client libmysqlclient-dev
 
     #{bash_ended}
