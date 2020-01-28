@@ -7,7 +7,7 @@
 
 return if skip_recipe
 
-bash "ripgrep" do
+bash 'ripgrep' do
   code <<-EOT
     #{bash_began}
 
@@ -16,7 +16,6 @@ bash "ripgrep" do
       dpkg -i /tmp/ripgrep_11.0.2_amd64.deb
       rm /tmp/ripgrep_11.0.2_amd64.deb
     }
-    echo "Say something else."
 
     #{bash_ended}
   EOT

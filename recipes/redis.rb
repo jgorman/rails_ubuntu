@@ -2,7 +2,7 @@
 
 return if skip_recipe
 
-bash "redis" do
+bash 'redis' do
   code <<-EOT
     #{bash_began}
 

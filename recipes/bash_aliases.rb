@@ -12,10 +12,11 @@ EOT
 
 bash_aliases = get(:bash_aliases) || default_aliases
 
-file "/root/.bash_aliases" do
+file '/root/.bash_aliases' do
   action :create_if_missing
   content bash_aliases
 end
+log_msg('working 2')
 
 file "/home/#{get(:deploy_user)}/.bash_aliases" do
   user get(:deploy_user)

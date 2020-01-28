@@ -84,7 +84,7 @@ end
 template "/etc/nginx/sites-enabled/#{get(:app_name)}" do
   helper(:get) {|key| node[@cookbook_name][key] }
   helper(:deploy_to) { "#{deploy_to}" }
-  source "nginx_site.erb"
+  source 'nginx_site.erb'
 end
 
 service 'nginx' do

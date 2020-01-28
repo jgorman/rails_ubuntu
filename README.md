@@ -113,12 +113,7 @@ or copy this recipe to a new recipe for customization.
 
 ## `apt_upgrade` - Upgrade all packages ##
 
-Start with the latest package versions for security and stability.
-
-## `apt_install` - Apt packages to build Ruby ##
-
-Building a custom ruby gives us control over the exact ruby version and
-Capistrano can bundle the required gems while running as the deploy user.
+## `apt_install` - Install build packages ##
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
@@ -154,7 +149,7 @@ Attributes: `node_version`
 
 ## `redis` - Install Redis service ##
 
-Use this for Action Cable websocket support.
+Install Redis for Action Cable websocket support.
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 

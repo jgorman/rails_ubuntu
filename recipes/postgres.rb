@@ -6,7 +6,7 @@ db_user     = get(:db_user)
 db_password = get(:db_password)
 db_name     = get(:db_name)
 
-bash "postgres" do
+bash 'postgres' do
   code <<-EOT
     #{bash_began}
 
@@ -22,7 +22,7 @@ unless db_user && db_password && db_name
   return
 end
 
-bash "db_create" do
+bash 'db_create' do
   code <<-EOT
     #{bash_began('db_create')}
 

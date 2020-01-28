@@ -48,7 +48,6 @@ end
 
 class Chef::Resource::Bash
   include ::RailsUbuntuLogger
-
 end
 
 class Chef::Resource::File
