@@ -21,6 +21,7 @@ alias vb='vi ~/.bashrc; exec bash'
 alias bb='exec bash'
 
 export R=~/activity-timer/current
+alias S.='export R=`pwd`; R'
 alias R='cd $R && ls -l'
 alias Rcon='cd $R/config && ls -l'
 alias Rlog='cd $R/log && ls -l'

@@ -60,8 +60,8 @@ vagrant@vagrant-box $
 # 2. <a id="chef"></a>Run Chef to Provision the Server #
 
 ```
-me@my-mac $ chef-run --user vagrant --password vagrant vagrant-box \
-  mycookbook::setup_vagrant_box
+me@my-mac $ chef-run --user vagrant --password vagrant demo-server-01 \
+  rails_servers::demo_server
 ```
 
 If you see the message
@@ -95,12 +95,58 @@ https://gorails.com/deploy/ubuntu/18.04#capistrano
 my@my-mac myapp $ bundle exec cap production deploy --hosts=vagrant-box
 ```
 
-Because it too dangerous to automate, you must run the database setup
-tasks manually. For example.
+The `deploy` process will run any pending database migrations using `db:migrate`.
+If you did not create a fresh local database and are using a separate database
+server, the migration should succeed and your production database will match
+the new schema structure.
+
+Anything more than db:migrate is too dangerous to automate.
+
+If you have an empty local database that needs more setup than a migration,
+or if the migration fails for any reason you can manually run `db:setup`.
 
 ```
-vagrant@vagrant-box $ cd /home/vagrant/myapp/current
+vagrant@vagrant-box $ cd /home/vagrant/activity-timer/releases/<latest-release>
 vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
+```
+
+Once the database is in good shape, you can navigate to your application
+to wake nginx/passenger up and test it.
+
+For a local vagrant server that would be something like `http://172.16.166.208`.
+
+Once it is woken up, you can examine the passenger status.
+
+```
+# passenger-status
+----------- Application groups -----------
+/home/vagrant/activity-timer/current (production):
+  App root: /home/vagrant/activity-timer/current
+  Requests in queue: 0
+  * PID: 14759   Sessions: 1       Processed: 6       Uptime: 26m 43s
+    CPU: 0%      Memory  : 105M    Last used: 15m 34s ago
+```
+
+You can also restart the application after making changes.
+
+```
+passenger-config restart-app /home/vagrant/activity-timer/current
+Restarting /home/vagrant/activity-timer/current (production)
+```
+
+When in doubt, restart nginx.
+
+```
+# service nginx status
+# service nginx restart
+```
+
+If nothing is working, make sure that the database runs from
+the command line.
+
+```
+$ cd /home/vagrant/activity-timer/current
+$ bundle exec bin/rails server -e production
 ```
 
 
@@ -165,13 +211,29 @@ If `db_type` is not set, skip database setup.
 Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
+Feel free to configure the appropriate level of database
+security and access. The install out of the box only serving
+to localhost.
+
 ## `postgres` - Install Postgres and create database ##
 
 Can be called directly or by the `database` recipe.
 
+You can gain access to the `postgres` role from the `postgres` unix user.
+
+```
+sudo su postgres -c psql
+```
+
 ## `mysql` - Install Mysql and create database ##
 
 Can be called directly or by the `database` recipe.
+
+You can gain access to the `root` Mysql user from the `root` unix user.
+
+```
+sudo su -c mysql
+```
 
 ## `setup_wrapper_example` - Wrapper example ##
 
@@ -206,12 +268,83 @@ default['rails_ubuntu']['deploy_group']   = 'vagrant'
 
 # <a id="wrapper-cookbooks"></a>Wrapper Cookbooks #
 
+Instead of modifying the `rails_ubuntu` cookbook, you can set up
+a wrapper cookbook with recipes for the different kinds of servers
+that you want to provision.
+
+Navigate to your cookbooks directory and generate a new cookbook.
+
+```
+$ chef generate cookbook rails_servers
+$ cd rails_servers
+```
+
+Add a line to the end of `Policyfile.rb` to specify the location of
+the `rails_ubuntu` cookbook.
+
+```
+cookbook 'rails_ubuntu', github: 'jgorman/rails_ubuntu'
+```
+
+Add a line to the end of `metadata.rb` to tell Chef to load
+the `rails_ubuntu` cookbook.
+
+```
+depends 'rails_ubuntu'
+```
+
+Then make a new recipe that configures your new server type.
+
+```
+$ cd recipes
+$ cat >demo_server.rb
+node.default['rails_ubuntu']['app_name']      = 'activity-timer'
+
+node.default['rails_ubuntu']['db_type']       = 'postgres'
+node.default['rails_ubuntu']['db_user']       = 'rails'
+node.default['rails_ubuntu']['db_password']   = 'rails123'
+node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
+
+include_recipe 'rails_ubuntu::setup_all'
+```
+
+You can include the `rails_ubuntu::setup_all` master recipe or only
+include the individual recipes that make sense for you.
+
+Then run the recipe to [provision the new server](#chef).
+
 
 # <a id="chef-run"></a>Chef-run Setup #
 
 The easiest way to test your wrapper configuration is to use
-`chef-run` to Vagrant boxes.
+`chef-run` to provision throwaway Vagrant servers.
 
 You can spin up a fresh new Vagrant box, provision it,
 and deploy your Rails application within minutes. Once that
 works for your application you can deploy to a live Ubuntu server.
+
+Download and install Chef Workstation
+
+```
+https://downloads.chef.io/chef-workstation/
+```
+
+Configure your default cookbook locations.
+
+```
+$ vi ~/.chef/config.rb
+cookbook_path ["/Users/u/rails/github/chef/cookbooks"]
+```
+
+Configure the Chef debug log location. The `stack-trace.log` file
+will be dropped in the same directory when there is a ruby
+compile error.
+
+```
+$ vi ~/.chef-workstation/config.toml
+[log]
+level="debug"
+location="/Users/u/rails/github/chef/chef-run.log"
+```
+
+Then you can use [chef-run](#chef) for provisioning.
