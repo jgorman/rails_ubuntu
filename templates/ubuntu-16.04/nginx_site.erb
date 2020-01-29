@@ -2,10 +2,10 @@ server {
   listen 80;
   listen [::]:80 ipv6only=on;
 
-  server_name <%= get(:server_name) %>;
+  server_name <%= @server_name %>;
   passenger_enabled on;
   rails_env production;
-  root <%= deploy_to %>/current/public;
+  root <%= @deploy_dir %>/current/public;
 
   # redirect server error pages to the static page /50x.html
   error_page   500 502 503 504  /50x.html;

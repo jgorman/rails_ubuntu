@@ -2,11 +2,13 @@
 
 return if skip_recipe
 
+node_version = node['rails_ubuntu']['node_version']
+
 bash 'node' do
   code <<-EOT
     #{bash_began}
 
-    curl -sL https://deb.nodesource.com/setup_#{get(:node_version)}.x | bash -
+    curl -sL https://deb.nodesource.com/setup_#{node_version}.x | bash -
 
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
     echo 'deb https://dl.yarnpkg.com/debian/ stable main' \

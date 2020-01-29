@@ -3,7 +3,7 @@
 A Chef cookbook to provision Ubuntu for Rails deployment using
 Nginx, Passenger, and Capistrano.
 
-This is also excellent stack for deploying node applications.
+This is also excellent stack for deploying Node applications.
 
 This cookbook is modeled on the excellent Go Rails deployment guide.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
@@ -18,7 +18,7 @@ Here are three steps to a running Ubuntu Rails server.
 2. [Run Chef to Provision the Server](#chef)
 3. [Run Capistrano to Install Rails](#capistrano)
 
-Then you can run `cap deploy` any time to effortlessly update
+Then you can run `cap production deploy` any time to effortlessly update
 your Rails applications running on all of your test, staging,
 and production servers!
 
@@ -153,7 +153,7 @@ $ bundle exec bin/rails server -e production
 $ vi log/production.log
 ```
 
-Once your initial deployment is working, you can run `cap deploy`
+Once your initial deployment is working, you can run `cap production deploy`
 any time to keep all of your servers up to date.
 
 
@@ -350,8 +350,11 @@ cookbook_path ["/Users/u/rails/github/chef/cookbooks"]
 ```
 
 Configure the Chef debug log location. The `stack-trace.log` file
-will be dropped in the same directory when there is a ruby
+will be created in the same directory when there is a ruby
 compile error.
+
+For recipe debugging, `puts "Helpful debugging messages!"`
+will show up in `chef-run.log`.
 
 ```
 $ vi ~/.chef-workstation/config.toml

@@ -31,7 +31,8 @@ module ::RailsUbuntuLogger
   end
 
   def skip_recipe
-    skip_recipes = get(:skip_recipes) || ''
+    skip_recipes = node[@cookbook_name] && node[@cookbook_name]['skip_recipes']
+    skip_recipes ||= ''
     if skip_recipes.include?(@recipe_name)
       log_msg('skipped')
       true

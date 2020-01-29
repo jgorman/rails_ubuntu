@@ -3,20 +3,26 @@
 # https://www.phusionpassenger.com/library/install/nginx/install/oss/
 
 return if skip_recipe
-log_msg('began')
+
+server_name = node['rails_ubuntu']['server_name']
+app_name    = node['rails_ubuntu']['app_name']
+deploy_to   = node['rails_ubuntu']['deploy_to']
+deploy_user = node['rails_ubuntu']['deploy_user']
+
+deploy_dir  = deploy_to || "/home/#{deploy_user}/#{app_name}"
 
 platform_version = node['platform_version']
 ubuntu_name =
   case platform_version
   when '16.04'
     'xenial'
-  when '18.04', '20.04'
+  when '18.04'
     'bionic'
   else
     raise "Untested Ubuntu version '#{platform_version}'"
   end
 
-deploy_to = get(:deploy_to) || "/home/#{get(:deploy_user)}/#{get(:app_name)}"
+log_msg('began')
 
 bash 'nginx_passenger' do
   code <<-EOT
@@ -48,10 +54,9 @@ when '16.04'
   end
 
   replace_or_add 'passenger.conf' do
-    def get(key); node[@cookbook_name][key] end
     path '/etc/nginx/passenger.conf'
     pattern '.*passenger_ruby.*'
-    line "passenger_ruby /home/#{get(:deploy_user)}/.rbenv/shims/ruby;"
+    line "passenger_ruby /home/#{deploy_user}/.rbenv/shims/ruby;"
   end
 
 when '18.04', '20.04'
@@ -67,10 +72,9 @@ when '18.04', '20.04'
   end
 
   replace_or_add 'mod-http-passenger.conf' do
-    def get(key); node[@cookbook_name][key] end
     path '/etc/nginx/conf.d/mod-http-passenger.conf'
     pattern '.*passenger_ruby.*'
-    line "passenger_ruby /home/#{get(:deploy_user)}/.rbenv/shims/ruby;"
+    line "passenger_ruby /home/#{deploy_user}/.rbenv/shims/ruby;"
   end
 
 else
@@ -81,10 +85,12 @@ file '/etc/nginx/sites-enabled/default' do
   action :delete
 end
 
-template "/etc/nginx/sites-enabled/#{get(:app_name)}" do
-  helper(:get) {|key| node[@cookbook_name][key] }
-  helper(:deploy_to) { "#{deploy_to}" }
+template "/etc/nginx/sites-enabled/#{app_name}" do
   source 'nginx_site.erb'
+  variables(
+    server_name:  "#{server_name}",
+    app_name:     "#{app_name}",
+    deploy_dir:   "#{deploy_dir}")
 end
 
 service 'nginx' do

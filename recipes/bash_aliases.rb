@@ -1,7 +1,10 @@
 # Add bash aliases to the root and deploy users.
 
 return if skip_recipe
-log_msg('began')
+
+bash_aliases  = node['rails_ubuntu']['bash_aliases']
+deploy_user   = node['rails_ubuntu']['deploy_user']
+deploy_group  = node['rails_ubuntu']['deploy_group']
 
 default_aliases = <<EOT
 alias l='ls -l'
@@ -10,18 +13,20 @@ alias lc='ls -C'
 alias lt='ls -lrt'
 EOT
 
-bash_aliases = get(:bash_aliases) || default_aliases
+aliases = bash_aliases || default_aliases
+
+log_msg('began')
 
 file '/root/.bash_aliases' do
   action :create_if_missing
-  content bash_aliases
+  content aliases
 end
 
-file "/home/#{get(:deploy_user)}/.bash_aliases" do
-  user get(:deploy_user)
-  group get(:deploy_group)
+file "/home/#{deploy_user}/.bash_aliases" do
+  user  "#{deploy_user}"
+  group "#{deploy_group}"
   action :create_if_missing
-  content bash_aliases
+  content aliases
 end
 
 log_msg('ended')

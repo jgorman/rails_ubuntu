@@ -2,14 +2,18 @@
 
 return if skip_recipe
 
-if ::File.exist?("/home/#{get(:deploy_user)}/.rbenv")
+deploy_user   = node['rails_ubuntu']['deploy_user']
+deploy_group  = node['rails_ubuntu']['deploy_group']
+ruby_version  = node['rails_ubuntu']['ruby_version']
+
+if ::File.exist?("/home/#{deploy_user}/.rbenv")
   log_msg('completed')
   return
 end
 
 bash 'ruby' do
-  user get(:deploy_user)
-  group get(:deploy_group)
+  user  "#{deploy_user}"
+  group "#{deploy_group}"
   code <<-EOT
     #{bash_began('ruby')}
 
@@ -20,8 +24,8 @@ bash 'ruby' do
     echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
     git clone https://github.com/rbenv/rbenv-vars.git ~/.rbenv/plugins/rbenv-vars
 
-    ~/.rbenv/bin/rbenv install #{get(:ruby_version)}
-    ~/.rbenv/bin/rbenv global #{get(:ruby_version)}
+    ~/.rbenv/bin/rbenv install #{ruby_version}
+    ~/.rbenv/bin/rbenv global #{ruby_version}
     ~/.rbenv/shims/gem install bundler
 
     #{bash_ended('ruby')}

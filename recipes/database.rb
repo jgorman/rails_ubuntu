@@ -2,7 +2,9 @@
 
 return if skip_recipe
 
-case get(:db_type)
+db_type = node['rails_ubuntu']['db_type']
+
+case db_type
 when 'postgres'
   include_recipe '::postgres'
 when 'mysql'
