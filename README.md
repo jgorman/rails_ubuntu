@@ -1,10 +1,11 @@
 # rails_ubuntu Chef Cookbook
 
-A Chef cookbook to provision Ubuntu for Rails deployment using Capistrano.
+A Chef cookbook to provision Ubuntu for Rails deployment using
+Nginx, Passenger, and Capistrano.
 
-Capistrano is also excellent for running node applications.
+This is also excellent stack for deploying node applications.
 
-Modeled on the excellent Go Rails deployment guides.
+This cookbook is modeled on the excellent Go Rails deployment guide.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
 
 - https://gorails.com/deploy/ubuntu/18.04
@@ -84,12 +85,13 @@ vagrant@vagrant-box ~ $ tail -f chef.log
 
 # 3. <a id="capistrano"></a>Run Capistrano to Install Rails #
 
-Set up your Rails application for deployment with Capistrano.
-
-After your new server is provisioned, run your initial application
-deployment using this guide.
+Set up your Rails application for deployment with Capistrano following
+this guide.
 
 https://gorails.com/deploy/ubuntu/18.04#capistrano
+
+Run Capistrano for the first time to set up the standard deployment
+directory structure.
 
 ```
 my@my-mac myapp $ bundle exec cap production deploy --hosts=vagrant-box
@@ -97,13 +99,14 @@ my@my-mac myapp $ bundle exec cap production deploy --hosts=vagrant-box
 
 The `deploy` process will run any pending database migrations using `db:migrate`.
 If you did not create a fresh local database and are using a separate database
-server, the migration should succeed and your production database will match
-the new schema structure.
+server, the migration will run and your production database will be updated
+to match the new schema structure.
 
 Anything more than db:migrate is too dangerous to automate.
 
 If you have an empty local database that needs more setup than a migration,
-or if the migration fails for any reason you can manually run `db:setup`.
+or if the migration from an empty database fails for any reason you can
+manually run `db:setup`.
 
 ```
 vagrant@vagrant-box $ cd /home/vagrant/activity-timer/releases/<latest-release>
@@ -111,7 +114,7 @@ vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
 ```
 
 Once the database is in good shape, you can navigate to your application
-to wake nginx/passenger up and test it.
+to wake nginx/passenger up to test it.
 
 For a local vagrant server that would be something like `http://172.16.166.208`.
 
@@ -130,24 +133,28 @@ Once it is woken up, you can examine the passenger status.
 You can also restart the application after making changes.
 
 ```
-passenger-config restart-app /home/vagrant/activity-timer/current
+# passenger-config restart-app /home/vagrant/activity-timer/current
 Restarting /home/vagrant/activity-timer/current (production)
 ```
 
-When in doubt, restart nginx.
+When in doubt, restart nginx. This will reset passenger as well.
 
 ```
 # service nginx status
 # service nginx restart
 ```
 
-If nothing is working, make sure that the database runs from
-the command line.
+If nothing is working, make sure that the Rails runs from the command line
+and examine `production.log` to see what is going wrong.
 
 ```
 $ cd /home/vagrant/activity-timer/current
 $ bundle exec bin/rails server -e production
+$ vi log/production.log
 ```
+
+Once your initial deployment is working, you can run `cap deploy`
+any time to keep all of your servers up to date.
 
 
 # <a id="recipes"></a> Recipe Documentation #
@@ -203,8 +210,7 @@ Attributes: `server_name`, `app_name`, `deploy_user`
 
 ## `database` - Install Postgres or Mysql and create database ##
 
-Attributes: `db_type` (postgres | mysql)
-Attributes: `db_user`, `db_password`, `db_name`
+Attributes: `db_type` (postgres | mysql), `db_user`, `db_password`, `db_name`
 
 If `db_type` is not set, skip database setup.
 
@@ -212,14 +218,15 @@ Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
 Feel free to configure the appropriate level of database
-security and access. The install out of the box only serving
-to localhost.
+security and access. By default, the database servers
+are only accessible from localhost.
 
 ## `postgres` - Install Postgres and create database ##
 
-Can be called directly or by the `database` recipe.
+Postgres setup can be called directly or from the `database` recipe.
 
-You can gain access to the `postgres` role from the `postgres` unix user.
+You can gain access to the `postgres` Postgres database role from
+the `postgres` unix user.
 
 ```
 sudo su postgres -c psql
@@ -227,9 +234,10 @@ sudo su postgres -c psql
 
 ## `mysql` - Install Mysql and create database ##
 
-Can be called directly or by the `database` recipe.
+Mysql setup can be called directly or from the `database` recipe.
 
-You can gain access to the `root` Mysql user from the `root` unix user.
+You can gain access to the `root` Mysql database user from
+the `root` unix user.
 
 ```
 sudo su -c mysql
@@ -311,7 +319,12 @@ include_recipe 'rails_ubuntu::setup_all'
 You can include the `rails_ubuntu::setup_all` master recipe or only
 include the individual recipes that make sense for you.
 
-Then run the recipe to [provision the new server](#chef).
+Feel free to copy recipes from `rails_ubuntu` into your cookbook so that you
+can customize them to better meet your needs. You can copy the
+helpers from `rails_ubuntu/libraries` into your cookbook so that
+your customized `rails_ubuntu` recipes will run in your cookbook.
+
+Then run your new recipe to [provision the new server](#chef).
 
 
 # <a id="chef-run"></a>Chef-run Setup #
