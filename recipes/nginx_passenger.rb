@@ -81,12 +81,13 @@ else
   raise "Untested Ubuntu version '#{platform_version}'"
 end
 
-file '/etc/nginx/sites-enabled/default' do
+link '/etc/nginx/sites-enabled/default' do
   action :delete
 end
 
 template "/etc/nginx/sites-enabled/#{app_name}" do
   source 'nginx_site.erb'
+  action :create_if_missing
   variables(
     server_name:  "#{server_name}",
     app_name:     "#{app_name}",
