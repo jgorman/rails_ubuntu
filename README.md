@@ -353,9 +353,6 @@ Configure the Chef debug log location. The `stack-trace.log` file
 will be created in the same directory when there is a ruby
 compile error.
 
-For recipe debugging, `puts "Helpful debugging messages!"`
-will show up in `chef-run.log`.
-
 ```
 $ vi ~/.chef-workstation/config.toml
 [log]
@@ -363,4 +360,6 @@ level="debug"
 location="/Users/u/rails/github/chef/chef-run.log"
 ```
 
-Then you can use [chef-run](#chef) for provisioning.
+For recipe debugging, `puts "Helpful debugging messages!"`
+will show up in `chef-run.log`. You can `tail -f chef-run.log`
+to watch the deployment progress in real time.

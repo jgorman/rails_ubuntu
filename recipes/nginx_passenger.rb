@@ -7,9 +7,8 @@ return if skip_recipe
 server_name = node['rails_ubuntu']['server_name']
 app_name    = node['rails_ubuntu']['app_name']
 deploy_to   = node['rails_ubuntu']['deploy_to']
-deploy_user = node['rails_ubuntu']['deploy_user']
 
-deploy_dir  = deploy_to || "/home/#{deploy_user}/#{app_name}"
+deploy_dir  = deploy_to || "#{Dir.home}/#{app_name}"
 
 platform_version = node['platform_version']
 ubuntu_name =
@@ -56,7 +55,7 @@ when '16.04'
   replace_or_add 'passenger.conf' do
     path '/etc/nginx/passenger.conf'
     pattern '.*passenger_ruby.*'
-    line "passenger_ruby /home/#{deploy_user}/.rbenv/shims/ruby;"
+    line "passenger_ruby #{Dir.home}/.rbenv/shims/ruby;"
   end
 
 when '18.04', '20.04'
@@ -74,7 +73,7 @@ when '18.04', '20.04'
   replace_or_add 'mod-http-passenger.conf' do
     path '/etc/nginx/conf.d/mod-http-passenger.conf'
     pattern '.*passenger_ruby.*'
-    line "passenger_ruby /home/#{deploy_user}/.rbenv/shims/ruby;"
+    line "passenger_ruby #{Dir.home}/.rbenv/shims/ruby;"
   end
 
 else

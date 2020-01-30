@@ -27,8 +27,6 @@ alias Rcon='cd $R/config && ls -l'
 alias Rlog='cd $R/log && ls -l'
 EOT
 
-node.default['rails_ubuntu']['db_type']      = 'both'
-#node.default['rails_ubuntu']['skip_recipes'] = 'database'
-#include_recipe 'rails_ubuntu::database'
+node.default['rails_ubuntu']['db_type'] = 'both'
 
 include_recipe 'rails_ubuntu::setup_all'
