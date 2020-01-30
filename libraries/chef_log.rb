@@ -4,28 +4,28 @@
 #
 #####
 
-module ::RailsUbuntuLogger
+module ChefLog
 
   def bash_began(recipe = @recipe_name)
     <<-EOT
       exec >>~/chef.log 2>&1
       chmod a+w ~/chef.log 2>/dev/null
-      echo -e "===\\nRecipe #{recipe} began `date`\\n"
+      echo -e "\\n<<< Recipe #{recipe} began `date`\\n"
     EOT
   end
 
   def bash_ended(recipe = @recipe_name)
     <<-EOT
-      echo -e "\\nRecipe #{recipe} ended `date`"
+      echo -e "\\n>>> Recipe #{recipe} ended `date`"
     EOT
   end
 
-  def log_msg(msg)
-    bash "log_msg" do
+  def chef_log(msg, recipe = @recipe_name)
+    bash msg do
       code <<-EOT
         exec >>~/chef.log 2>&1
         chmod a+w ~/chef.log 2>/dev/null
-        echo -e "===\\nRecipe #{recipe_name} #{msg} `date`"
+        echo -e "\\n=== Recipe #{recipe} #{msg} `date`"
       EOT
     end
   end
@@ -34,7 +34,7 @@ module ::RailsUbuntuLogger
     skip_recipes = node[@cookbook_name] && node[@cookbook_name]['skip_recipes']
     skip_recipes ||= ''
     if skip_recipes.include?(@recipe_name)
-      log_msg('skipped')
+      chef_log('skipped')
       true
     else
       false
@@ -44,13 +44,13 @@ module ::RailsUbuntuLogger
 end
 
 class Chef::Recipe
-  include ::RailsUbuntuLogger
+  include ChefLog
 end
 
 class Chef::Resource::Bash
-  include ::RailsUbuntuLogger
+  include ChefLog
 end
 
 class Chef::Resource::File
-  include ::RailsUbuntuLogger
+  include ChefLog
 end

@@ -15,7 +15,7 @@ EOT
 
 aliases = bash_aliases || default_aliases
 
-log_msg('began')
+chef_log('began')
 
 file '/root/.bash_aliases' do
   action :create_if_missing
@@ -29,4 +29,4 @@ file "/home/#{deploy_user}/.bash_aliases" do
   content aliases
 end
 
-log_msg('ended')
+chef_log('ended')

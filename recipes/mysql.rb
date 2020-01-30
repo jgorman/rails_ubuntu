@@ -19,7 +19,7 @@ bash 'mysql' do
 end
 
 unless db_user && db_password && db_name
-  log_msg('skipped user and database creation')
+  chef_log('skipped user and database creation')
   return
 end
 

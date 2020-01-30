@@ -13,5 +13,5 @@ when 'both'
   include_recipe '::postgres'
   include_recipe '::mysql'
 else
-  log_msg('skipped')
+  chef_log('skipped')
 end

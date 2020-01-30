@@ -22,7 +22,7 @@ ubuntu_name =
     raise "Untested Ubuntu version '#{platform_version}'"
   end
 
-log_msg('began')
+chef_log('began')
 
 bash 'nginx_passenger' do
   code <<-EOT
@@ -98,4 +98,4 @@ service 'nginx' do
   action [ :enable, :start ]
 end
 
-log_msg('ended')
+chef_log('ended')

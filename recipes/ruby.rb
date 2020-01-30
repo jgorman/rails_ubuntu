@@ -7,7 +7,7 @@ deploy_group  = node['rails_ubuntu']['deploy_group']
 ruby_version  = node['rails_ubuntu']['ruby_version']
 
 if ::File.exist?("/home/#{deploy_user}/.rbenv")
-  log_msg('completed')
+  chef_log('completed')
   return
 end
 
