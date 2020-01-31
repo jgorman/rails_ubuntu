@@ -28,8 +28,12 @@ See below for more information.
 - [Attribute Defaults](#attributes)
 - [Wrapper Cookbooks](#wrapper-cookbooks)
 - [Chef-Run Setup](#chef-run)
+- [Vagrant Setup](#vagrant)
 
 # <a id="deploy-user"></a>1. Add the Deploy User #
+
+These instructions are for setting up the deploy user for a live server.
+See the section below for [Vagrant setup](#vagrant).
 
 ### 1.1. Deploy User with Passwordless Sudo ###
 
@@ -54,6 +58,9 @@ Rails application from.
 ```
 me@my-mac $ brew install ssh-copy-id
 me@my-mac $ ssh-copy-id vagrant@vagrant-box
+vagrant@vagrant-box's password:
+Number of key(s) added:        1
+
 me@my-mac $ ssh vagrant@vagrant-box
 vagrant@vagrant-box $
 ```
@@ -113,8 +120,13 @@ vagrant@vagrant-box $ cd /home/vagrant/activity-timer/releases/<latest-release>
 vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
 ```
 
-Once the database is in good shape, you can navigate to your application
-to wake nginx/passenger up to test it.
+Once the database is in good shape, restart nginx and
+navigate to your application to wake nginx/passenger up to test it.
+
+```
+# service nginx status
+# service nginx restart
+```
 
 For a local vagrant server that would be something like `http://172.16.166.208`.
 
@@ -137,12 +149,7 @@ You can also restart the application after making changes.
 Restarting /home/vagrant/activity-timer/current (production)
 ```
 
-When in doubt, restart nginx. This will reset passenger as well.
-
-```
-# service nginx status
-# service nginx restart
-```
+When in doubt, restart nginx again. This will reset passenger as well.
 
 If nothing is working, make sure that the Rails runs from the command line
 and examine `production.log` to see what is going wrong.
@@ -319,12 +326,8 @@ include_recipe 'rails_ubuntu::setup_all'
 You can include the `rails_ubuntu::setup_all` master recipe or only
 include the individual recipes that make sense for you.
 
-Feel free to copy recipes from `rails_ubuntu` into your cookbook so that you
-can customize them to better meet your needs. You can copy the
-helpers from `rails_ubuntu/libraries` into your cookbook so that
-your customized `rails_ubuntu` recipes will run in your cookbook.
-
-Then run your new recipe to [provision the new server](#chef).
+You can copy recipes from `rails_ubuntu` into your cookbook so that you
+can customize them to better meet your needs.
 
 
 # <a id="chef-run"></a>Chef-run Setup #
@@ -363,3 +366,78 @@ location="/Users/u/rails/github/chef/chef-run.log"
 For recipe debugging, `puts "Helpful debugging messages!"`
 will show up in `chef-run.log`. You can `tail -f chef-run.log`
 to watch the deployment progress in real time.
+
+
+# <a id="vagrant"></a>Vagrant Setup #
+
+The standard Ubuntu Vagrant boxes run under Virtualbox.
+
+- 16.04 Xenial https://app.vagrantup.com/ubuntu/boxes/xenial64
+- 18.04 Bionic https://app.vagrantup.com/ubuntu/boxes/bionic64
+
+You will want to install Vagrant, Virtualbox and the Virtualbox tools.
+Here is the Homebrew command for OS X. You can also download the
+installers for you OS directly from Vagrant and Virtualbox.
+
+```
+brew cask install vagrant virtualbox virtualbox-extension-pack
+```
+
+You can run the standard Ubuntu Virtualbox Vagrant servers with these
+`Vagrantfile` configurations.
+
+## Ubuntu Xenial 16.04 Vagrantfile ##
+
+```
+Vagrant.configure('2') do |config|
+  config.vm.box         = 'ubuntu/xenial64' # Ubuntu Xenial 16.04.
+  config.vm.hostname    = 'chef16'
+  config.vm.provider      :virtualbox
+
+  # Vagrant private network dhcp issue.
+  # https://github.com/hashicorp/vagrant/issues/3083
+  config.trigger.before [ :up, :reload, :provision ] do |trigger|
+    trigger.ruby do |env,machine|
+      `VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 2>/dev/null`
+    end
+  end
+  config.vm.network :private_network, type: :dhcp
+
+  # Allow password access for chef-run.
+  config.vm.provision "shell", inline: <<-SHELL
+    s=/etc/ssh/sshd_config
+    cp $s $s.orig
+    sed -e '/^PasswordAuthentication/s/^/#/' <$s >$s.new
+    mv $s.new $s
+    systemctl restart sshd
+  SHELL
+end
+```
+
+## Ubuntu Bionic 18.04 Vagrantfile ##
+
+```
+Vagrant.configure('2') do |config|
+  config.vm.box         = 'ubuntu/bionic64' # Ubuntu Bionic 18.04.
+  config.vm.hostname    = 'chef18'
+  config.vm.provider      :virtualbox
+
+  # Vagrant private network dhcp issue.
+  # https://github.com/hashicorp/vagrant/issues/3083
+  config.trigger.before [ :up, :reload, :provision ] do |trigger|
+    trigger.ruby do |env,machine|
+      `VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 2>/dev/null`
+    end
+  end
+  config.vm.network :private_network, type: :dhcp
+
+  # Allow password access for chef-run.
+  config.vm.provision "shell", inline: <<-SHELL
+    s=/etc/ssh/sshd_config
+    cp $s $s.orig
+    sed -e '/^PasswordAuthentication/s/^/#/' <$s >$s.new
+    mv $s.new $s
+    systemctl restart sshd
+  SHELL
+end
+```
