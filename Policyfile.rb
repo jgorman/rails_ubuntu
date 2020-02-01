@@ -15,4 +15,3 @@ run_list 'rails_ubuntu::default'
 # Specify a custom source for a single cookbook:
 cookbook 'rails_ubuntu', path: '.'
 cookbook 'line', '~> 2.0.1', :supermarket
-

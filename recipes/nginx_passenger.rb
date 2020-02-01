@@ -8,7 +8,7 @@ server_name = node['rails_ubuntu']['server_name']
 app_name    = node['rails_ubuntu']['app_name']
 deploy_to   = node['rails_ubuntu']['deploy_to']
 
-deploy_dir  = deploy_to || "#{Dir.home}/#{app_name}"
+deploy_dir = deploy_to || "#{Dir.home}/#{app_name}"
 
 platform_version = node['platform_version']
 ubuntu_name =
@@ -88,9 +88,10 @@ template "/etc/nginx/sites-enabled/#{app_name}" do
   source 'nginx_site.erb'
   action :create_if_missing
   variables(
-    server_name:  "#{server_name}",
-    app_name:     "#{app_name}",
-    deploy_dir:   "#{deploy_dir}")
+    server_name: server_name,
+    app_name: app_name,
+    deploy_dir: deploy_dir
+  )
 end
 
 service 'nginx' do

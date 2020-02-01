@@ -5,7 +5,6 @@
 #####
 
 module ChefLog
-
   def bash_began(recipe = @recipe_name)
     <<-EOT
       exec >>~/chef.log 2>&1
@@ -40,7 +39,6 @@ module ChefLog
       false
     end
   end
-
 end
 
 class Chef::Recipe

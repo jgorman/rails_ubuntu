@@ -6,10 +6,10 @@ deploy_user   = node['rails_ubuntu']['deploy_user']
 deploy_group  = node['rails_ubuntu']['deploy_group']
 ruby_version  = node['rails_ubuntu']['ruby_version']
 
-if !File.exist?("#{Dir.home}/.rbenv")
+unless File.exist?("#{Dir.home}/.rbenv")
   bash 'rbenv' do
-    user  "#{deploy_user}"
-    group "#{deploy_group}"
+    user  deploy_user
+    group deploy_group
     code <<-EOT
       #{bash_began('rbenv')}
 
@@ -29,8 +29,8 @@ if !File.exist?("#{Dir.home}/.rbenv")
 end
 
 bash 'ruby' do
-  user  "#{deploy_user}"
-  group "#{deploy_group}"
+  user  deploy_user
+  group deploy_group
   code <<-EOT
     #{bash_began('ruby')}
 

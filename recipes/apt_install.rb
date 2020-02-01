@@ -2,7 +2,7 @@
 
 return if skip_recipe
 
-bash "apt_install" do
+bash 'apt_install' do
   code <<-EOT
     #{bash_began}
 

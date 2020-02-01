@@ -56,19 +56,22 @@ Run this on the workstation that you will be deploying your
 Rails application from.
 
 ```
-me@my-mac $ brew install ssh-copy-id
-me@my-mac $ ssh-copy-id vagrant@vagrant-box
+me@mymac $ brew install ssh-copy-id
+me@mymac $ ssh-copy-id vagrant@vagrant-box
 vagrant@vagrant-box's password:
 Number of key(s) added:        1
 
-me@my-mac $ ssh vagrant@vagrant-box
+me@mymac $ ssh vagrant@vagrant-box
 vagrant@vagrant-box $
 ```
 
 # 2. <a id="chef"></a>Run Chef to Provision the Server #
 
+Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
+to configure and call the `rails_ubuntu` cookbook.
+
 ```
-me@my-mac $ chef-run --user vagrant --password vagrant demo-server-01 \
+me@mymac $ chef-run --user vagrant --password vagrant demo-server-01 \
   rails_servers::demo_server
 ```
 
@@ -101,15 +104,16 @@ Run Capistrano for the first time to set up the standard deployment
 directory structure.
 
 ```
-my@my-mac myapp $ bundle exec cap production deploy --hosts=vagrant-box
+my@mymac myapp $ bundle exec cap production deploy --hosts=vagrant-box
 ```
 
 The `deploy` process will run any pending database migrations using `db:migrate`.
-If you did not create a fresh local database and are using a separate database
-server, the migration will run and your production database will be updated
+If you did not create a local database server and are using a separate database
+machine, the migration will run and your production database will be updated
 to match the new schema structure.
 
-Anything more than db:migrate is too dangerous to automate.
+Anything more than `db:migrate` is too dangerous to automate for a production
+environment so Capistrano leaves it for us to complete manually.
 
 If you have an empty local database that needs more setup than a migration,
 or if the migration from an empty database fails for any reason you can
@@ -120,12 +124,18 @@ vagrant@vagrant-box $ cd /home/vagrant/activity-timer/releases/<latest-release>
 vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
 ```
 
-Once the database is in good shape, restart nginx and
-navigate to your application to wake nginx/passenger up to test it.
+If the initial deploy failed, run another deploy to set up the `myapp/current`
+release pointer.
 
 ```
-# service nginx status
-# service nginx restart
+my@mymac myapp $ bundle exec cap production deploy --hosts=vagrant-box
+```
+
+Restart Nginx and navigate to your application to wake nginx/passenger
+up to test it.
+
+```
+systemctl restart nginx
 ```
 
 For a local vagrant server that would be something like `http://172.16.166.208`.
@@ -149,7 +159,8 @@ You can also restart the application after making changes.
 Restarting /home/vagrant/activity-timer/current (production)
 ```
 
-When in doubt, restart nginx again. This will reset passenger as well.
+When in doubt, restart nginx again. This the most reliable way to reset
+everything for a fresh start.
 
 If nothing is working, make sure that the Rails runs from the command line
 and examine `production.log` to see what is going wrong.
@@ -161,7 +172,7 @@ $ vi log/production.log
 ```
 
 Once your initial deployment is working, you can run `cap production deploy`
-any time to keep all of your servers up to date.
+any time to keep all of your servers up to date with application changes.
 
 
 # <a id="recipes"></a> Recipe Documentation #
@@ -370,17 +381,40 @@ to watch the deployment progress in real time.
 
 # <a id="vagrant"></a>Vagrant Setup #
 
-The standard Ubuntu Vagrant boxes run under Virtualbox.
+Use the standard Chef Bento Ubuntu Vagrant boxes.
 
-- 16.04 Xenial https://app.vagrantup.com/ubuntu/boxes/xenial64
-- 18.04 Bionic https://app.vagrantup.com/ubuntu/boxes/bionic64
+- 16.04 Xenial https://app.vagrantup.com/bento/boxes/ubuntu-16.04
+- 18.04 Bionic https://app.vagrantup.com/bento/boxes/ubuntu-18.04
 
-You will want to install Vagrant, Virtualbox and the Virtualbox tools.
-Here is the Homebrew command for OS X. You can also download the
-installers for you OS directly from Vagrant and Virtualbox.
+You will want to install Vagrant, Virtualbox and the
+Virtualbox Extension Pack.
+Here is the Homebrew command for OS X.
 
 ```
 brew cask install vagrant virtualbox virtualbox-extension-pack
+```
+
+You can also download the
+installers for your OS directly from Vagrant and Virtualbox.
+
+- https://www.vagrantup.com/downloads.html
+- https://www.virtualbox.org/wiki/Downloads
+
+Make a directory, copy one of the Vagrantfiles below into it, bring up
+the vm, and get the vm ip address.
+
+```
+me@mymac $ mkdir bento18
+me@mymac $ cd bento18
+me@mymac $ cat >Vagrantfile
+me@mymac $ vagrant up
+me@mymac $ vagrant ssh -c ifconfig | grep 'inet '
+        inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
+        inet 172.28.128.17  netmask 255.255.255.0  broadcast 172.28.128.255
+        inet 127.0.0.1  netmask 255.0.0.0
+me@mymac $ ssh vagrant@172.28.128.17
+vagrant@172.28.128.17's password: vagrant
+vagrant@bento18 ~ $
 ```
 
 You can run the standard Ubuntu Virtualbox Vagrant servers with these
@@ -390,9 +424,9 @@ You can run the standard Ubuntu Virtualbox Vagrant servers with these
 
 ```
 Vagrant.configure('2') do |config|
-  config.vm.box         = 'ubuntu/xenial64' # Ubuntu Xenial 16.04.
-  config.vm.hostname    = 'chef16'
-  config.vm.provider      :virtualbox
+  config.vm.box       = "bento/ubuntu-16.04"
+  config.vm.hostname  = 'bento16'
+  config.vm.provider    :virtualbox
 
   # Vagrant private network dhcp issue.
   # https://github.com/hashicorp/vagrant/issues/3083
@@ -402,15 +436,6 @@ Vagrant.configure('2') do |config|
     end
   end
   config.vm.network :private_network, type: :dhcp
-
-  # Allow password access for chef-run.
-  config.vm.provision "shell", inline: <<-SHELL
-    s=/etc/ssh/sshd_config
-    cp $s $s.orig
-    sed -e '/^PasswordAuthentication/s/^/#/' <$s >$s.new
-    mv $s.new $s
-    systemctl restart sshd
-  SHELL
 end
 ```
 
@@ -418,9 +443,9 @@ end
 
 ```
 Vagrant.configure('2') do |config|
-  config.vm.box         = 'ubuntu/bionic64' # Ubuntu Bionic 18.04.
-  config.vm.hostname    = 'chef18'
-  config.vm.provider      :virtualbox
+  config.vm.box       = "bento/ubuntu-18.04"
+  config.vm.hostname  = 'bento18'
+  config.vm.provider    :virtualbox
 
   # Vagrant private network dhcp issue.
   # https://github.com/hashicorp/vagrant/issues/3083
@@ -430,14 +455,5 @@ Vagrant.configure('2') do |config|
     end
   end
   config.vm.network :private_network, type: :dhcp
-
-  # Allow password access for chef-run.
-  config.vm.provision "shell", inline: <<-SHELL
-    s=/etc/ssh/sshd_config
-    cp $s $s.orig
-    sed -e '/^PasswordAuthentication/s/^/#/' <$s >$s.new
-    mv $s.new $s
-    systemctl restart sshd
-  SHELL
 end
 ```

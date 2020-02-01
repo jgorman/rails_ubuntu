@@ -23,8 +23,8 @@ file '/root/.bash_aliases' do
 end
 
 file "#{Dir.home}/.bash_aliases" do
-  user  "#{deploy_user}"
-  group "#{deploy_group}"
+  user  deploy_user
+  group deploy_group
   action :create_if_missing
   content aliases
 end
