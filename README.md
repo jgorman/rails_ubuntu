@@ -104,31 +104,21 @@ Run Capistrano for the first time to set up the standard deployment
 directory structure.
 
 ```
-my@mymac myapp $ bundle exec cap production deploy --hosts=vagrant-box
+my@mymac myapp $ bundle exec cap production deploy
 ```
 
-The `deploy` process will run any pending database migrations using `db:migrate`.
-If you did not create a local database server and are using a separate database
-machine, the migration will run and your production database will be updated
-to match the new schema structure.
+Once your initial deployment is working, you can run `cap production deploy`
+any time to keep all of your servers up to date with application changes.
 
-Anything more than `db:migrate` is too dangerous to automate for a production
-environment so Capistrano leaves it for us to complete manually.
+## Troubleshooting ##
 
-If you have an empty local database that needs more setup than a migration,
-or if the migration from an empty database fails for any reason you can
-manually run `db:setup`.
+Make sure that the Rails runs from the command line and examine
+`production.log` to see what is going wrong.
 
 ```
-vagrant@vagrant-box $ cd /home/vagrant/activity-timer/releases/<latest-release>
-vagrant@vagrant-box $ bundle exec bin/rails RAILS_ENV=production db:setup
-```
-
-If the initial deploy failed, run another deploy to set up the `myapp/current`
-release pointer.
-
-```
-my@mymac myapp $ bundle exec cap production deploy --hosts=vagrant-box
+$ cd /home/vagrant/activity-timer/current
+$ bundle exec bin/rails server -e production
+$ vi log/production.log
 ```
 
 Restart Nginx and navigate to your application to wake nginx/passenger
@@ -161,18 +151,6 @@ Restarting /home/vagrant/activity-timer/current (production)
 
 When in doubt, restart nginx again. This the most reliable way to reset
 everything for a fresh start.
-
-If nothing is working, make sure that the Rails runs from the command line
-and examine `production.log` to see what is going wrong.
-
-```
-$ cd /home/vagrant/activity-timer/current
-$ bundle exec bin/rails server -e production
-$ vi log/production.log
-```
-
-Once your initial deployment is working, you can run `cap production deploy`
-any time to keep all of your servers up to date with application changes.
 
 
 # <a id="recipes"></a> Recipe Documentation #
@@ -261,10 +239,13 @@ the `root` unix user.
 sudo su -c mysql
 ```
 
-## `setup_wrapper_example` - Wrapper example ##
+## `setup_test` - Wrapper example ##
 
 An example of how to wrap and call the `rails_ubuntu` recipes
 from another cookbook.
+
+It also sets up for Chef Cookbook Kitchen testing located at
+`test/integration/setup_test/default.rb`
 
 
 # <a id="attributes"></a>Attribute Defaults #
@@ -388,6 +369,7 @@ Use the standard Chef Bento Ubuntu Vagrant boxes.
 
 You will want to install Vagrant, Virtualbox and the
 Virtualbox Extension Pack.
+
 Here is the Homebrew command for OS X.
 
 ```
@@ -400,8 +382,16 @@ installers for your OS directly from Vagrant and Virtualbox.
 - https://www.vagrantup.com/downloads.html
 - https://www.virtualbox.org/wiki/Downloads
 
+We can configure the Vagrant guests to use port forwarding like this
+or we can use the private network option as shown in the Vagrantfiles below.
+
+```
+  config.vm.network :forwarded_port, guest: 22, host: 8022
+  config.vm.network :forwarded_port, guest: 80, host: 8080
+```
+
 Make a directory, copy one of the Vagrantfiles below into it, bring up
-the vm, and get the vm ip address.
+the vm, and get the dhcp assigned ip address.
 
 ```
 me@mymac $ mkdir bento18

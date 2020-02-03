@@ -9,7 +9,7 @@ when 'postgres'
   include_recipe '::postgres'
 when 'mysql'
   include_recipe '::mysql'
-when 'both'
+when 'all'
   include_recipe '::postgres'
   include_recipe '::mysql'
 else
