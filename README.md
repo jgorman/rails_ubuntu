@@ -3,7 +3,7 @@
 A Chef cookbook to provision Ubuntu for Rails deployment using
 Nginx, Passenger, and Capistrano.
 
-This is also excellent stack for deploying Node applications.
+This is also an excellent stack for deploying Node applications.
 
 This cookbook is modeled on the excellent Go Rails deployment guide.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
@@ -35,7 +35,7 @@ See below for more information.
 # 1. Add the Deploy User #
 
 These instructions are for setting up the deploy user for a live server.
-See the section below for [Vagrant setup](#vagrant).
+See the section below for [Vagrant setup](#vagrant-setup).
 
 ### 1.1. Deploy User with Passwordless Sudo ###
 
@@ -45,8 +45,8 @@ for a Vagrant box.
 ```
 root # adduser vagrant
 root # echo "vagrant ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/vagrant
-root # su - vagrant
-vagrant $ sudo su -
+root # su vagrant
+vagrant $ sudo su # No password prompt.
 root #
 ```
 
@@ -54,7 +54,7 @@ root #
 
 Set up passwordless ssh from your workstation user to the deploy user.
 
-Run this on the workstation that you will be deploying your
+Run `ssh-copy-id` on the workstation that you will be deploying your
 Rails application from.
 
 ```
@@ -62,7 +62,19 @@ me@mymac $ brew install ssh-copy-id
 me@mymac $ ssh-copy-id vagrant@vagrant-box
 vagrant@vagrant-box's password:
 Number of key(s) added:        1
+```
 
+Or manually copy your `~/.ssh/id_rsa.pub` file into place.
+
+```
+vagrant@vagrant-box $ mkdir .ssh
+vagrant@vagrant-box $ chmod 700 .ssh
+vagrant@vagrant-box $ vi .ssh/authorized_keys
+```
+
+Then test passwordless ssh.
+
+```
 me@mymac $ ssh vagrant@vagrant-box
 vagrant@vagrant-box $
 ```
@@ -73,8 +85,7 @@ Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
 to configure and call the `rails_ubuntu` cookbook.
 
 ```
-me@mymac $ chef-run --user vagrant --password vagrant demo-server-01 \
-  rails_servers::demo_server
+me@mymac $ chef-run -i ~/.ssh/id_rsa vagrant@demo rails_servers::demo_server
 ```
 
 If you see the message
@@ -120,13 +131,17 @@ any time to keep all of your servers up to date with application changes.
 You can set the `skip_recipes` attribute to skip unnecessary items
 or copy this recipe to a new recipe for customization.
 
+```
+node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
+```
+
 ## `apt_upgrade` - Upgrade all packages ##
 
 ## `apt_install` - Install build packages ##
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
-For those of us with muscle memory.
+For those of us with muscle memory. You can set `bash_aliases` with your own bash shortcuts. See the `setup_test` recipe for an example.
 
 Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
 
