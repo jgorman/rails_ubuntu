@@ -14,9 +14,9 @@ Tested on Ubuntu 16.04 and 18.04 with Postgres and Mysql.
 
 Here are three steps to a running Ubuntu Rails server.
 
-1. [Add the Deploy User](#deploy-user)
-2. [Run Chef to Provision the Server](#chef)
-3. [Run Capistrano to Install Rails](#capistrano)
+1. [Add the Deploy User](#1-add-the-deploy-user)
+2. [Run Chef to Provision the Server](#2-run-chef-to-provision-the-server)
+3. [Run Capistrano to Install Rails](#3-run-capistrano-to-install-rails)
 
 Then you can run `cap production deploy` any time to effortlessly update
 your Rails applications running on all of your test, staging,
@@ -24,13 +24,15 @@ and production servers!
 
 See below for more information.
 
-- [Recipe Documentation](#recipes)
-- [Attribute Defaults](#attributes)
+- [Recipe Documentation](#recipe-documentation)
+- [Attribute Defaults](#attribute-defaults)
 - [Wrapper Cookbooks](#wrapper-cookbooks)
-- [Chef-Run Setup](#chef-run)
-- [Vagrant Setup](#vagrant)
+- [Chef-Run Setup](#chef-run-setup)
+- [Vagrant Setup](#vagrant-setup)
+- [Troubleshooting](#troubleshooting)
 
-# <a id="deploy-user"></a>1. Add the Deploy User #
+
+# 1. Add the Deploy User #
 
 These instructions are for setting up the deploy user for a live server.
 See the section below for [Vagrant setup](#vagrant).
@@ -65,7 +67,7 @@ me@mymac $ ssh vagrant@vagrant-box
 vagrant@vagrant-box $
 ```
 
-# 2. <a id="chef"></a>Run Chef to Provision the Server #
+# 2. Run Chef to Provision the Server #
 
 Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
 to configure and call the `rails_ubuntu` cookbook.
@@ -93,7 +95,7 @@ vagrant@vagrant-box ~ $ touch chef.log
 vagrant@vagrant-box ~ $ tail -f chef.log
 ```
 
-# 3. <a id="capistrano"></a>Run Capistrano to Install Rails #
+# 3. Run Capistrano to Install Rails #
 
 Set up your Rails application for deployment with Capistrano following
 this guide.
@@ -110,50 +112,8 @@ my@mymac myapp $ bundle exec cap production deploy
 Once your initial deployment is working, you can run `cap production deploy`
 any time to keep all of your servers up to date with application changes.
 
-## Troubleshooting ##
 
-Make sure that the Rails runs from the command line and examine
-`production.log` to see what is going wrong.
-
-```
-$ cd /home/vagrant/activity-timer/current
-$ bundle exec bin/rails server -e production
-$ vi log/production.log
-```
-
-Restart Nginx and navigate to your application to wake nginx/passenger
-up to test it.
-
-```
-systemctl restart nginx
-```
-
-For a local vagrant server that would be something like `http://172.16.166.208`.
-
-Once it is woken up, you can examine the passenger status.
-
-```
-# passenger-status
------------ Application groups -----------
-/home/vagrant/activity-timer/current (production):
-  App root: /home/vagrant/activity-timer/current
-  Requests in queue: 0
-  * PID: 14759   Sessions: 1       Processed: 6       Uptime: 26m 43s
-    CPU: 0%      Memory  : 105M    Last used: 15m 34s ago
-```
-
-You can also restart the application after making changes.
-
-```
-# passenger-config restart-app /home/vagrant/activity-timer/current
-Restarting /home/vagrant/activity-timer/current (production)
-```
-
-When in doubt, restart nginx again. This the most reliable way to reset
-everything for a fresh start.
-
-
-# <a id="recipes"></a> Recipe Documentation #
+# Recipe Documentation #
 
 ## `setup_all` - Run all recipes ##
 
@@ -248,7 +208,7 @@ It also sets up for Chef Cookbook Kitchen testing located at
 `test/integration/setup_test/default.rb`
 
 
-# <a id="attributes"></a>Attribute Defaults #
+# Attribute Defaults #
 
 See `rails_ubuntu/attributes/defaults.rb`
 
@@ -273,7 +233,7 @@ default['rails_ubuntu']['deploy_group']   = 'vagrant'
 ```
 
 
-# <a id="wrapper-cookbooks"></a>Wrapper Cookbooks #
+# Wrapper Cookbooks #
 
 Instead of modifying the `rails_ubuntu` cookbook, you can set up
 a wrapper cookbook with recipes for the different kinds of servers
@@ -287,7 +247,12 @@ $ cd rails_servers
 ```
 
 Add a line to the end of `Policyfile.rb` to specify the location of
-the `rails_ubuntu` cookbook.
+the `rails_ubuntu` cookbook from the Chef Cookbook Supermarket or
+from github.
+
+```
+cookbook 'rails_ubuntu', '~> 0.1', :supermarket
+```
 
 ```
 cookbook 'rails_ubuntu', github: 'jgorman/rails_ubuntu'
@@ -322,7 +287,7 @@ You can copy recipes from `rails_ubuntu` into your cookbook so that you
 can customize them to better meet your needs.
 
 
-# <a id="chef-run"></a>Chef-run Setup #
+# Chef-run Setup #
 
 The easiest way to test your wrapper configuration is to use
 `chef-run` to provision throwaway Vagrant servers.
@@ -360,7 +325,7 @@ will show up in `chef-run.log`. You can `tail -f chef-run.log`
 to watch the deployment progress in real time.
 
 
-# <a id="vagrant"></a>Vagrant Setup #
+# Vagrant Setup #
 
 Use the standard Chef Bento Ubuntu Vagrant boxes.
 
@@ -447,3 +412,45 @@ Vagrant.configure('2') do |config|
   config.vm.network :private_network, type: :dhcp
 end
 ```
+
+# Troubleshooting #
+
+Make sure that the Rails runs from the command line and examine
+`production.log` to see what is going wrong.
+
+```
+$ cd /home/vagrant/activity-timer/current
+$ bundle exec bin/rails server -e production
+$ vi log/production.log
+```
+
+Restart Nginx and navigate to your application to wake nginx/passenger
+up to test it.
+
+```
+systemctl restart nginx
+```
+
+For a local vagrant server that would be something like `http://172.16.166.208`.
+
+Once it is woken up, you can examine the passenger status.
+
+```
+# passenger-status
+----------- Application groups -----------
+/home/vagrant/activity-timer/current (production):
+  App root: /home/vagrant/activity-timer/current
+  Requests in queue: 0
+  * PID: 14759   Sessions: 1       Processed: 6       Uptime: 26m 43s
+    CPU: 0%      Memory  : 105M    Last used: 15m 34s ago
+```
+
+You can also restart the application after making changes.
+
+```
+# passenger-config restart-app /home/vagrant/activity-timer/current
+Restarting /home/vagrant/activity-timer/current (production)
+```
+
+When in doubt, restart nginx again. This the most reliable way to reset
+everything for a fresh start.
