@@ -4,9 +4,11 @@
 
 return if skip_recipe
 
-server_name = node['rails_ubuntu']['server_name']
-app_name    = node['rails_ubuntu']['app_name']
-deploy_to   = node['rails_ubuntu']['deploy_to']
+server_name   = node['rails_ubuntu']['server_name']
+app_name      = node['rails_ubuntu']['app_name']
+deploy_user   = node['rails_ubuntu']['deploy_user']
+deploy_group  = node['rails_ubuntu']['deploy_group']
+deploy_to     = node['rails_ubuntu']['deploy_to']
 
 deploy_dir = deploy_to || "#{Dir.home}/#{app_name}"
 
@@ -22,6 +24,14 @@ ubuntu_name =
   end
 
 chef_log('began')
+
+directory deploy_dir do
+  owner deploy_user
+  group deploy_group
+  mode '0755'
+  recursive true
+  action :create
+end
 
 bash 'nginx_passenger' do
   code <<-EOT

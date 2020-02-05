@@ -1,6 +1,6 @@
 default['rails_ubuntu']['server_name']    = node['fqdn']
 default['rails_ubuntu']['app_name']       = 'myapp'
-# deploy_to = deploy_to || "/home/#{deploy_user}/#{app_name}"
+# deploy_to = deploy_to || "#{Dir.home}/#{app_name}"
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
 default['rails_ubuntu']['node_version']   = '12'

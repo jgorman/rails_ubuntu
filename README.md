@@ -12,6 +12,11 @@ A big shout out to [Chris Oliver](https://gorails.com/users/1)!
 
 Tested on Ubuntu 16.04 and 18.04 with Postgres and Mysql.
 
+Available from the Chef Supermarket or the latest version on Github.
+
+- https://supermarket.chef.io/cookbooks/rails_ubuntu
+- https://github.com/jgorman/rails_ubuntu
+
 Here are three steps to a running Ubuntu Rails server.
 
 1. [Add the Deploy User](#1-add-the-deploy-user)
@@ -177,7 +182,10 @@ Install Redis for Action Cable websocket support.
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
-Attributes: `server_name`, `app_name`, `deploy_user`
+Attributes: `server_name`, `app_name`, `deploy_user`, `deploy_group`, `deploy_to`
+
+Will create the deploy directory if it does not exist. You can specify the `deploy_to` directory location or it will default to `app_name` in the
+`deploy_user`'s home directory.
 
 ## `database` - Install Postgres or Mysql and create database ##
 
@@ -230,7 +238,7 @@ See `rails_ubuntu/attributes/defaults.rb`
 ```
 default['rails_ubuntu']['server_name']    = node['fqdn']
 default['rails_ubuntu']['app_name']       = 'myapp'
-# deploy_to = deploy_to || "/home/#{deploy_user}/#{app_name}"
+# deploy_to = deploy_to || "#{Dir.home}/#{app_name}"
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
 default['rails_ubuntu']['node_version']   = '12'
@@ -262,12 +270,15 @@ $ cd rails_servers
 ```
 
 Add a line to the end of `Policyfile.rb` to specify the location of
-the `rails_ubuntu` cookbook from the Chef Cookbook Supermarket or
-from github.
+the `rails_ubuntu` cookbook.
+
+From the Chef Cookbook Supermarket.
 
 ```
 cookbook 'rails_ubuntu', '~> 0.1', :supermarket
 ```
+
+Or use the latest Github version.
 
 ```
 cookbook 'rails_ubuntu', github: 'jgorman/rails_ubuntu'
