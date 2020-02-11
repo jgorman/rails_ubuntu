@@ -1,4 +1,5 @@
 default['rails_ubuntu']['app_name']       = 'myapp'
+default['rails_ubuntu']['app_env']        = 'production'
 default['rails_ubuntu']['server_name']    = node['fqdn']
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'

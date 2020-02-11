@@ -223,10 +223,14 @@ node.default['rails_ubuntu']['redis_unsafe'] = 'unsafe'
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
-Attributes: `server_name`, `app_name`, `deploy_user`, `deploy_group`, `deploy_to`
+Attributes: `server_name`, `app_name`, `app_env`,
+`deploy_user`, `deploy_group`, `deploy_to`
 
 Will create the deploy directory if it does not exist. You can specify the `deploy_to` directory location or it will default to `app_name` in the
 `deploy_user`'s home directory.
+
+`server_name` and `app_env` are used in the nginx config file. `app_env`
+defaults to `production`.
 
 ## `database` - Install Postgres or Mysql and create database ##
 
@@ -281,6 +285,7 @@ See `rails_ubuntu/attributes/defaults.rb`
 
 ```
 default['rails_ubuntu']['app_name']       = 'myapp'
+default['rails_ubuntu']['app_env']        = 'production'
 default['rails_ubuntu']['server_name']    = node['fqdn']
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'

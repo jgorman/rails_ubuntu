@@ -6,6 +6,7 @@ return if skip_recipe
 
 server_name   = node['rails_ubuntu']['server_name']
 app_name      = node['rails_ubuntu']['app_name']
+app_env       = node['rails_ubuntu']['app_env']
 deploy_user   = node['rails_ubuntu']['deploy_user']
 deploy_group  = node['rails_ubuntu']['deploy_group']
 deploy_to     = node['rails_ubuntu']['deploy_to']
@@ -108,6 +109,7 @@ template "/etc/nginx/sites-enabled/#{app_name}" do
   variables(
     server_name: server_name,
     app_name: app_name,
+    app_env: app_env,
     deploy_dir: deploy_dir
   )
 end
