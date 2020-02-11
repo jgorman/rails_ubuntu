@@ -1,16 +1,15 @@
-# Apt packages to build ruby.
+# Install basic packages.
 
 return if skip_recipe
+
+apt_install = node['rails_ubuntu']['apt_install']
 
 bash 'apt_install' do
   code <<-EOT
     #{bash_began}
 
     apt-get update -qq
-    apt-get install -y -qq git-core build-essential software-properties-common \
-      libcurl4-openssl-dev libffi-dev libreadline-dev libsqlite3-dev \
-      libssl-dev libxml2-dev libxslt1-dev libyaml-dev sqlite3 zlib1g-dev \
-      vim curl apt-transport-https ca-certificates dirmngr gnupg
+    apt-get install -y -qq #{apt_install}
 
     #{bash_ended}
   EOT

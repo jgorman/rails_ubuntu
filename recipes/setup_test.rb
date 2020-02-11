@@ -9,12 +9,10 @@ node.default['rails_ubuntu']['db_type']       = 'all'
 node.default['rails_ubuntu']['db_user']       = 'rails'
 node.default['rails_ubuntu']['db_password']   = 'rails123'
 node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
+node.default['rails_ubuntu']['db_unsafe']     = 'unsafe'
+node.default['rails_ubuntu']['redis_unsafe']  = 'unsafe'
 
-node.default['rails_ubuntu']['bash_aliases']  = <<EOT
-alias l='ls -l'
-alias la='ls -la'
-alias lc='ls -C'
-alias lt='ls -lrt'
+node.default['rails_ubuntu']['bash_aliases']  += <<EOT
 
 export PS1='\\u@\\h \\w \\\$ '
 alias peg='ps -ef | grep'
@@ -44,4 +42,4 @@ vi() {
 }
 EOT
 
-include_recipe 'rails_ubuntu::setup_all'
+include_recipe 'rails_ubuntu::server_rails'

@@ -5,6 +5,7 @@ return if skip_recipe
 db_user     = node['rails_ubuntu']['db_user']
 db_password = node['rails_ubuntu']['db_password']
 db_name     = node['rails_ubuntu']['db_name']
+db_unsafe   = node['rails_ubuntu']['db_unsafe']
 
 bash 'mysql_install' do
   code <<-EOT
@@ -16,6 +17,20 @@ bash 'mysql_install' do
 
     #{bash_ended('mysql_install')}
   EOT
+end
+
+if db_unsafe == 'unsafe'
+  bash 'mysql_unsafe' do
+    code <<-EOT
+      #{bash_began('mysql_unsafe')}
+
+      myc='/etc/mysql/mysql.conf.d/mysqld.cnf'
+      sed -i -e "s/^bind-address.*/bind-address = 0.0.0.0/" $myc
+      systemctl restart mysql
+
+      #{bash_ended('mysql_unsafe')}
+    EOT
+  end
 end
 
 unless db_user && db_password && db_name

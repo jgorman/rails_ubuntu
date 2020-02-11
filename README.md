@@ -90,6 +90,7 @@ Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
 to configure and call the `rails_ubuntu` cookbook.
 
 ```
+me@mymac $ cd cookbooks/rails_servers
 me@mymac $ chef-run -i ~/.ssh/id_rsa vagrant@demo rails_servers::demo_server
 ```
 
@@ -113,6 +114,12 @@ vagrant@vagrant-box ~ $ tail -f chef.log
 
 # 3. Run Capistrano to Install Rails #
 
+Set up your workstation with the Capistrano gems.
+
+```
+gem install capistrano capistrano-rails capistrano-passenger capistrano-rbenv
+```
+
 Set up your Rails application for deployment with Capistrano following
 this guide.
 
@@ -131,10 +138,18 @@ any time to keep all of your servers up to date with application changes.
 
 # Recipe Documentation #
 
-## `setup_all` - Run all recipes ##
+## Server Recipes ##
 
-You can set the `skip_recipes` attribute to skip unnecessary items
-or copy this recipe to a new recipe for customization.
+- server_rails - Complete rails server includes all features.
+- server_basic - Basic tools.
+- server_database - Database server: Postgres or Mysql.
+- server_postgres - Postgres server.
+- server_mysql - Mysql server.
+- server_redis - Redis server.
+- server_ruby - Ruby installed with rbenv.
+- server_node - Node.js installed.
+
+You can set the `skip_recipes` attribute to skip unnecessary features.
 
 ```
 node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
@@ -142,7 +157,16 @@ node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 
 ## `apt_upgrade` - Upgrade all packages ##
 
-## `apt_install` - Install build packages ##
+## `apt_install` - Install basic packages ##
+
+Attributes: `apt_install`
+
+You can replace or extend the basic package list.
+See [Attribute Defaults](#attribute-defaults) for the current list.
+
+```
+node.default['rails_ubuntu']['apt_install'] += + ' sqlite3'
+```
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
@@ -150,13 +174,15 @@ For those of us with muscle memory. You can set `bash_aliases` with your own bas
 
 Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
 
-```
-# Default aliases:
+You can replace or extend the bash_aliases.
+See [Attribute Defaults](#attribute-defaults) for the current list.
 
-alias l='ls -l'
-alias la='ls -la'
-alias lc='ls -C'
-alias lt='ls -lrt'
+```
+node.default['rails_ubuntu']['bash_aliases'] += <<EOT
+export PS1='\\u@\\h \\w \\\$ '
+alias peg='ps -ef | grep'
+alias c='clear'
+EOT
 ```
 
 ## `ripgrep` - Install Ripgrep ##
@@ -170,7 +196,14 @@ rg DATABASE_URL
 
 ## `ruby` - Build Ruby with Rbenv ##
 
-Attributes: `ruby_version`, `deploy_user`, `deploy_group`
+Attributes: `ruby_version`, `deploy_user`, `deploy_group`, `ruby_libs`
+
+You can replace or extend the ruby library packages.
+See [Attribute Defaults](#attribute-defaults) for the current list.
+
+```
+node.default['rails_ubuntu']['ruby_libs'] += ' libncurses5-dev'
+```
 
 ## `node` - Install Node and Yarn ##
 
@@ -178,7 +211,15 @@ Attributes: `node_version`
 
 ## `redis` - Install Redis service ##
 
+Attributes: `redis_unsafe`
+
 Install Redis for Action Cable websocket support.
+
+You can set `redis_unsafe` to allow outside connections.
+
+```
+node.default['rails_ubuntu']['redis_unsafe'] = 'unsafe'
+```
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
@@ -189,20 +230,23 @@ Will create the deploy directory if it does not exist. You can specify the `depl
 
 ## `database` - Install Postgres or Mysql and create database ##
 
-Attributes: `db_type` (postgres | mysql), `db_user`, `db_password`, `db_name`
+Attributes: `db_type` (postgres | mysql)
+Attributes: `db_user`, `db_password`, `db_name`, `db_unsafe`
 
 If `db_type` is not set, skip database setup.
 
 Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
-Feel free to configure the appropriate level of database
-security and access. By default, the database servers
-are only accessible from localhost.
+You can set `db_unsafe` to allow outside connections.
+
+```
+node.default['rails_ubuntu']['db_unsafe'] = 'unsafe'
+```
 
 ## `postgres` - Install Postgres and create database ##
 
-Postgres setup can be called directly or from the `database` recipe.
+Postgres setup can be called directly or via the `database` recipe.
 
 You can gain access to the `postgres` Postgres database role from
 the `postgres` unix user.
@@ -213,7 +257,7 @@ sudo su postgres -c psql
 
 ## `mysql` - Install Mysql and create database ##
 
-Mysql setup can be called directly or from the `database` recipe.
+Mysql setup can be called directly or via the `database` recipe.
 
 You can gain access to the `root` Mysql database user from
 the `root` unix user.
@@ -236,23 +280,40 @@ It also sets up for Chef Cookbook Kitchen testing located at
 See `rails_ubuntu/attributes/defaults.rb`
 
 ```
-default['rails_ubuntu']['server_name']    = node['fqdn']
 default['rails_ubuntu']['app_name']       = 'myapp'
-# deploy_to = deploy_to || "#{Dir.home}/#{app_name}"
+default['rails_ubuntu']['server_name']    = node['fqdn']
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
 default['rails_ubuntu']['node_version']   = '12'
 
 default['rails_ubuntu']['deploy_user']    = 'vagrant'
 default['rails_ubuntu']['deploy_group']   = 'vagrant'
-# bash_aliases = bash_aliases || [l, la, lc, lt]
+#default['rails_ubuntu']['deploy_to']     = '/home/<deploy_user>/<app_name>'
 
-# Leave db_type blank to skip local database installation.
-# db_type = (postgres | mysql)
-# Set db_user, db_password and db_name to create
-# the empty production database owned by db_user.
+default['rails_ubuntu']['db_type']        = 'none'
+#default['rails_ubuntu']['db_type']       = 'postgres'
+#default['rails_ubuntu']['db_type']       = 'mysql'
+#default['rails_ubuntu']['db_user']       = 'rails'
+#default['rails_ubuntu']['db_password']   = 'rails123'
+#default['rails_ubuntu']['db_unsafe']     = 'unsafe'
 
-# skip_recipes = 'bash_aliases, redis'
+#default['rails_ubuntu']['redis_unsafe']  = 'unsafe'
+#default['rails_ubuntu']['skip_recipes']  = 'bash_aliases, redis'
+
+default['rails_ubuntu']['bash_aliases']   = <<EOT
+alias l='ls -l'
+alias la='ls -la'
+alias lc='ls -C'
+alias lt='ls -lrt'
+EOT
+
+default['rails_ubuntu']['apt_install'] =
+"git-core build-essential software-properties-common \
+ vim curl apt-transport-https ca-certificates dirmngr gnupg"
+
+default['rails_ubuntu']['ruby_libs'] =
+"libcurl4-openssl-dev libffi-dev libreadline-dev libsqlite3-dev \
+ libssl-dev libxml2-dev libxslt1-dev libyaml-dev sqlite3 zlib1g-dev"
 ```
 
 
@@ -303,10 +364,10 @@ node.default['rails_ubuntu']['db_user']       = 'rails'
 node.default['rails_ubuntu']['db_password']   = 'rails123'
 node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
 
-include_recipe 'rails_ubuntu::setup_all'
+include_recipe 'rails_ubuntu::server_rails'
 ```
 
-You can include the `rails_ubuntu::setup_all` master recipe or only
+You can include the `rails_ubuntu::server_rails` master recipe or only
 include the individual recipes that make sense for you.
 
 You can copy recipes from `rails_ubuntu` into your cookbook so that you
@@ -464,19 +525,20 @@ Once it is woken up, you can examine the passenger status.
 ```
 # passenger-status
 ----------- Application groups -----------
-/home/vagrant/activity-timer/current (production):
-  App root: /home/vagrant/activity-timer/current
+/home/deploy/activity-timer/current (production):
+  App root: /home/deploy/activity-timer/current
   Requests in queue: 0
-  * PID: 14759   Sessions: 1       Processed: 6       Uptime: 26m 43s
-    CPU: 0%      Memory  : 105M    Last used: 15m 34s ago
+  * PID: 11517   Sessions: 0       Processed: 2       Uptime: 4s
+    CPU: 13%     Memory  : 35M     Last used: 4s ago
 ```
 
-You can also restart the application after making changes.
+You can ask passenger to restart the application after making changes.
 
 ```
-# passenger-config restart-app /home/vagrant/activity-timer/current
+# passenger-config restart-app /
 Restarting /home/vagrant/activity-timer/current (production)
 ```
 
-When in doubt, restart nginx again. This the most reliable way to reset
-everything for a fresh start.
+When in doubt, restart nginx again which will completely reload and restart
+passenger since passenger is running inside of nginx as a loadable module.
+This the most reliable way to reset everything for a fresh start.

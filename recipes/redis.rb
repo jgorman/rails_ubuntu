@@ -2,6 +2,8 @@
 
 return if skip_recipe
 
+redis_unsafe = node['rails_ubuntu']['redis_unsafe']
+
 bash 'redis' do
   code <<-EOT
     #{bash_began}
@@ -14,6 +16,25 @@ bash 'redis' do
 
     #{bash_ended}
   EOT
+end
+
+if redis_unsafe == 'unsafe'
+  replace_or_add 'redis_unprotected' do
+    path '/etc/redis/redis.conf'
+    pattern '^protected-mode.*'
+    line 'protected-mode no'
+  end
+
+  bash 'redis_unbound' do
+    code <<-EOT
+      #{bash_began('redis_unbound')}
+
+      sed -i -e 's/^bind/#bind/' /etc/redis/redis.conf
+      systemctl restart redis
+
+      #{bash_ended('redis_unbound')}
+    EOT
+  end
 end
 
 service 'redis-server' do

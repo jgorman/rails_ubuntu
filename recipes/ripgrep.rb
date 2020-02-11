@@ -2,7 +2,6 @@
 #
 # https://github.com/BurntSushi/ripgrep#installation
 # https://github.com/BurntSushi/ripgrep/releases
-#
 # See the Debian / Ubuntu section to install from the .deb file.
 
 return if skip_recipe

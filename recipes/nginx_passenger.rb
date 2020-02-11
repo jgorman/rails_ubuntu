@@ -35,6 +35,8 @@ end
 
 bash 'nginx_passenger' do
   code <<-EOT
+    #{bash_began}
+
     apt-key adv \
       --keyserver hkp://keyserver.ubuntu.com:80 \
       --recv-keys 561F9B9CAC40B2F7
@@ -42,6 +44,8 @@ bash 'nginx_passenger' do
     echo 'deb https://oss-binaries.phusionpassenger.com/apt/passenger #{ubuntu_name} main' > /etc/apt/sources.list.d/passenger.list
 
     apt-get update -qq
+
+    #{bash_ended}
   EOT
 end
 
@@ -51,7 +55,9 @@ when '16.04'
   bash 'nginx-16.04' do
     code <<-EOT
       #{bash_began('nginx-16.04')}
+
       apt-get install -y -qq nginx-extras passenger
+
       #{bash_ended('nginx-16.04')}
     EOT
   end
@@ -72,10 +78,12 @@ when '18.04', '20.04'
   bash 'nginx-18.04' do
     code <<-EOT
       #{bash_began('nginx-18.04')}
+
       apt-get install -y -qq nginx-extras libnginx-mod-http-passenger
       [ -f /etc/nginx/modules-enabled/50-mod-http-passenger.conf ] ||
         ln -s /usr/share/nginx/modules-available/mod-http-passenger.load \
           /etc/nginx/modules-enabled/50-mod-http-passenger.conf
+
       #{bash_ended('nginx-18.04')}
     EOT
   end
