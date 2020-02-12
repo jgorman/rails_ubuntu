@@ -6,7 +6,7 @@ server {
   root <%= @deploy_dir %>/current/public;
 
   passenger_enabled on;
-  passenger_app_env <%= @app_env %>;
+  passenger_app_env <%= @rails_env %>;
 
   location /cable {
   passenger_app_group_name <%= @app_name %>_websocket;

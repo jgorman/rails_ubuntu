@@ -157,6 +157,8 @@ node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 
 ## `apt_upgrade` - Upgrade all packages ##
 
+Always a good idea when provisioning a server.
+
 ## `apt_install` - Install basic packages ##
 
 Attributes: `apt_install`
@@ -191,12 +193,15 @@ Useful for figuring out how things are configured
 in the application code and in the bundled gems.
 
 ```
-rg DATABASE_URL
+rg --hidden DATABASE_URL
 ```
 
 ## `ruby` - Build Ruby with Rbenv ##
 
 Attributes: `ruby_version`, `deploy_user`, `deploy_group`, `ruby_libs`
+
+The current default `ruby-version` is `2.6.5`. Ruby 2.7 triggers
+many deprecation warnings in preparation for Ruby 3.0.
 
 You can replace or extend the ruby library packages.
 See [Attribute Defaults](#attribute-defaults) for the current list.
@@ -208,6 +213,8 @@ node.default['rails_ubuntu']['ruby_libs'] += ' libncurses5-dev'
 ## `node` - Install Node and Yarn ##
 
 Attributes: `node_version`
+
+The current default node.js version is `12`. This is the latest LTS version.
 
 ## `redis` - Install Redis service ##
 
@@ -223,14 +230,14 @@ node.default['rails_ubuntu']['redis_unsafe'] = 'unsafe'
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
-Attributes: `server_name`, `app_name`, `app_env`,
+Attributes: `server_name`, `app_name`, `rails_env`,
 `deploy_user`, `deploy_group`, `deploy_to`
 
 Will create the deploy directory if it does not exist. You can specify the `deploy_to` directory location or it will default to `app_name` in the
 `deploy_user`'s home directory.
 
-`server_name` and `app_env` are used in the nginx config file. `app_env`
-defaults to `production`.
+`deploy_to`, `server_name` and `rails_env` are used in the nginx config file.
+`rails_env` defaults to `production`.
 
 ## `database` - Install Postgres or Mysql and create database ##
 
@@ -285,7 +292,7 @@ See `rails_ubuntu/attributes/defaults.rb`
 
 ```
 default['rails_ubuntu']['app_name']       = 'myapp'
-default['rails_ubuntu']['app_env']        = 'production'
+default['rails_ubuntu']['rails_env']      = 'production'
 default['rails_ubuntu']['server_name']    = node['fqdn']
 
 default['rails_ubuntu']['ruby_version']   = '2.6.5'
