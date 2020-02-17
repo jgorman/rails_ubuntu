@@ -12,6 +12,7 @@ default['rails_ubuntu']['server_name']  = node['fqdn']
 #default['rails_ubuntu']['app_root']    = '<deploy_to>/current'
 #default['rails_ubuntu']['app_public']  = '<app_root>/public'
 #default['rails_ubuntu']['app_startup'] = 'app.js'
+#default['rails_ubuntu']['nginx_site']  = app_name
 
 default['rails_ubuntu']['db_type']      = 'none' # postgres | mysql
 #default['rails_ubuntu']['db_user']     =

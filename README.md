@@ -240,13 +240,14 @@ Attributes: `deploy_user`, `deploy_group`
 - `app_root`    = '<deploy_to>/current'
 - `app_public`  = '<app_root>/public'
 - `app_startup` = 'app.js'
+- `nginx_site`  = app_name
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
 to `app_name` in the `deploy_user`'s home directory.
 
 A template from `rails_ubuntu/templates` is used to
-create the `/etc/nginx/sites-enabled/<app_name>`
+create the `/etc/nginx/sites-enabled/<nginx_site>`
 Nginx configuration file. After this is run you can examine the file
 and adjust it as necessary.
 
@@ -337,6 +338,7 @@ default['rails_ubuntu']['server_name']  = node['fqdn']
 #default['rails_ubuntu']['app_root']    = '<deploy_to>/current'
 #default['rails_ubuntu']['app_public']  = '<app_root>/public'
 #default['rails_ubuntu']['app_startup'] = 'app.js'
+#default['rails_ubuntu']['nginx_site']  = app_name
 
 default['rails_ubuntu']['db_type']      = 'none' # postgres | mysql
 #default['rails_ubuntu']['db_user']     =

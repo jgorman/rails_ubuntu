@@ -16,6 +16,7 @@ deploy_to     = node['rails_ubuntu']['deploy_to'] || "#{Dir.home}/#{app_name}"
 app_root      = node['rails_ubuntu']['app_root'] || "#{deploy_to}/current"
 app_public    = node['rails_ubuntu']['app_public'] || "#{app_root}/public"
 app_startup   = node['rails_ubuntu']['app_startup'] || 'app.js'
+nginx_site    = node['rails_ubuntu']['nginx_site'] || app_name
 
 platform_version = node['platform_version']
 ubuntu_name =
@@ -121,7 +122,7 @@ link '/etc/nginx/sites-enabled/default' do
   action :delete
 end
 
-template "/etc/nginx/sites-enabled/#{app_name}" do
+template "/etc/nginx/sites-enabled/#{nginx_site}" do
   source "nginx_#{app_type}.erb"
   action :create_if_missing
   variables(
@@ -134,7 +135,8 @@ template "/etc/nginx/sites-enabled/#{app_name}" do
     deploy_to: deploy_to,
     app_root: app_root,
     app_public: app_public,
-    app_startup: app_startup
+    app_startup: app_startup,
+    nginx_site: nginx_site
   )
 end
 
