@@ -1,9 +1,7 @@
 # rails_ubuntu Chef Cookbook
 
-A Chef cookbook to provision Ubuntu for Rails deployment using
-Nginx, Passenger, and Capistrano.
-
-This is also an excellent stack for deploying Node applications.
+A Chef cookbook to provision Ubuntu for [Rails](#recipes) and
+[Node](#recipes) deployment using Nginx, Passenger, and Capistrano.
 
 This cookbook is modeled on the excellent Go Rails deployment guide.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
@@ -17,7 +15,7 @@ Available from the Chef Supermarket or the latest version on Github.
 - https://supermarket.chef.io/cookbooks/rails_ubuntu
 - https://github.com/jgorman/rails_ubuntu
 
-Here are three steps to a running Ubuntu Rails server.
+Here are three steps to a running Ubuntu Rails or Node server.
 
 1. [Add the Deploy User](#1-add-the-deploy-user)
 2. [Run Chef to Provision the Server](#2-run-chef-to-provision-the-server)
@@ -29,7 +27,7 @@ and production servers!
 
 See below for more information.
 
-- [Recipe Documentation](#recipe-documentation)
+- [Recipes](#recipes)
 - [Attribute Defaults](#attribute-defaults)
 - [Wrapper Cookbooks](#wrapper-cookbooks)
 - [Chef-Run Setup](#chef-run-setup)
@@ -90,8 +88,8 @@ Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
 to configure and call the `rails_ubuntu` cookbook.
 
 ```
-me@mymac $ cd cookbooks/rails_servers
-me@mymac $ chef-run -i ~/.ssh/id_rsa vagrant@demo rails_servers::demo_server
+me@mymac $ cd cookbooks/my_wrapper
+me@mymac $ chef-run -i ~/.ssh/id_rsa vagrant@demo my_wrapper::demo_server
 ```
 
 If you see the message
@@ -136,24 +134,26 @@ Once your initial deployment is working, you can run `cap production deploy`
 any time to keep all of your servers up to date with application changes.
 
 
-# Recipe Documentation #
+# Recipes #
 
-## Server Recipes ##
+## Server Setup Recipes ##
 
-- server_rails - Complete rails server includes all features.
-- server_basic - Basic tools.
-- server_database - Database server: Postgres or Mysql.
-- server_postgres - Postgres server.
-- server_mysql - Mysql server.
-- server_redis - Redis server.
-- server_ruby - Ruby installed with rbenv.
-- server_node - Node.js installed.
+- `server_rails` - Complete Rails server includes all features.
+- `server_node` - Complete Node server without Ruby.
+- `server_database` - Database server: Postgres or Mysql.
+- `server_postgres` - Postgres server.
+- `server_mysql` - Mysql server.
+- `server_redis` - Redis server.
+- `server_ruby` - Capistrano deploy workstation.
+- `server_basic` - Basic tools.
 
 You can set the `skip_recipes` attribute to skip unnecessary features.
 
 ```
 node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 ```
+
+## Feature Recipes ##
 
 ## `apt_upgrade` - Upgrade all packages ##
 
@@ -176,7 +176,7 @@ For those of us with muscle memory. You can set `bash_aliases` with your own bas
 
 Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
 
-You can replace or extend the bash_aliases.
+You can replace or extend the `.bash_aliases` file content.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
 ```
@@ -230,14 +230,46 @@ node.default['rails_ubuntu']['redis_unsafe'] = 'unsafe'
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
-Attributes: `server_name`, `app_name`, `rails_env`,
-`deploy_user`, `deploy_group`, `deploy_to`
+Attributes: `deploy_user`, `deploy_group`
 
-Will create the deploy directory if it does not exist. You can specify the `deploy_to` directory location or it will default to `app_name` in the
-`deploy_user`'s home directory.
+- `server_name` = node['fqdn']
+- `app_type`    = 'rails' # rails | node
+- `app_env`     = 'production'
+- `app_name`    = 'myapp'
+- `deploy_to`   = '/home/<deploy_user>/<app_name>'
+- `app_root`    = '<deploy_to>/current'
+- `app_public`  = '<app_root>/public'
+- `app_startup` = 'app.js'
 
-`deploy_to`, `server_name` and `rails_env` are used in the nginx config file.
-`rails_env` defaults to `production`.
+This recipe will create the `deploy_to` directory if it does not exist.
+You can specify the `deploy_to` directory location or it will default
+to `app_name` in the `deploy_user`'s home directory.
+
+A template from `rails_ubuntu/templates` is used to
+create the `/etc/nginx/sites-enabled/<app_name>`
+Nginx configuration file. After this is run you can examine the file
+and adjust it as necessary.
+
+You can also substitute your own nginx template file from your
+wrapper cookbook. Copy the one that you would like to alter
+from `rails_ubuntu/templates` into
+the same location in your wrapper cookbook and edit it.
+
+Be sure to invoke `edit_resource` after you have included
+the recipe that includes the `nginx_passenger` recipe so that
+the nginx template resource is there to edit.
+
+```
+node.default['rails_ubuntu']['app_name'] = 'activity-timer'
+include_recipe 'rails_ubuntu::server_rails'
+
+edit_resource!(:template, '/etc/nginx/sites-enabled/activity-timer') do
+  #source 'nginx_rails.erb'
+  cookbook 'my_wrapper'
+end
+```
+
+Your template has access to all of the attributes listed above.
 
 ## `database` - Install Postgres or Mysql and create database ##
 
@@ -291,28 +323,31 @@ It also sets up for Chef Cookbook Kitchen testing located at
 See `rails_ubuntu/attributes/defaults.rb`
 
 ```
-default['rails_ubuntu']['app_name']       = 'myapp'
-default['rails_ubuntu']['rails_env']      = 'production'
-default['rails_ubuntu']['server_name']    = node['fqdn']
+default['rails_ubuntu']['deploy_user']  = 'vagrant'
+default['rails_ubuntu']['deploy_group'] = 'vagrant'
 
-default['rails_ubuntu']['ruby_version']   = '2.6.5'
-default['rails_ubuntu']['node_version']   = '12'
+default['rails_ubuntu']['ruby_version'] = '2.6.5'
+default['rails_ubuntu']['node_version'] = '12'
 
-default['rails_ubuntu']['deploy_user']    = 'vagrant'
-default['rails_ubuntu']['deploy_group']   = 'vagrant'
-#default['rails_ubuntu']['deploy_to']     = '/home/<deploy_user>/<app_name>'
+default['rails_ubuntu']['server_name']  = node['fqdn']
+#default['rails_ubuntu']['app_type']    = 'rails' # rails | node
+#default['rails_ubuntu']['app_env']     = 'production'
+#default['rails_ubuntu']['app_name']    = 'myapp'
+#default['rails_ubuntu']['deploy_to']   = '/home/<deploy_user>/<app_name>'
+#default['rails_ubuntu']['app_root']    = '<deploy_to>/current'
+#default['rails_ubuntu']['app_public']  = '<app_root>/public'
+#default['rails_ubuntu']['app_startup'] = 'app.js'
 
-default['rails_ubuntu']['db_type']        = 'none'
-#default['rails_ubuntu']['db_type']       = 'postgres'
-#default['rails_ubuntu']['db_type']       = 'mysql'
-#default['rails_ubuntu']['db_user']       = 'rails'
-#default['rails_ubuntu']['db_password']   = 'rails123'
-#default['rails_ubuntu']['db_unsafe']     = 'unsafe'
+default['rails_ubuntu']['db_type']      = 'none' # postgres | mysql
+#default['rails_ubuntu']['db_user']     =
+#default['rails_ubuntu']['db_password'] =
+#default['rails_ubuntu']['db_name']     =
+#default['rails_ubuntu']['db_safe']     = 'safe' # safe | unsafe
 
-#default['rails_ubuntu']['redis_unsafe']  = 'unsafe'
-#default['rails_ubuntu']['skip_recipes']  = 'bash_aliases, redis'
+#default['rails_ubuntu']['redis_safe']  = 'safe' # safe | unsafe
+#default['rails_ubuntu']['skip_recipes'] = ''    # 'bash_aliases redis'
 
-default['rails_ubuntu']['bash_aliases']   = <<EOT
+default['rails_ubuntu']['bash_aliases'] = <<EOT
 alias l='ls -l'
 alias la='ls -la'
 alias lc='ls -C'
@@ -338,8 +373,8 @@ that you want to provision.
 Navigate to your cookbooks directory and generate a new cookbook.
 
 ```
-$ chef generate cookbook rails_servers
-$ cd rails_servers
+$ chef generate cookbook my_wrapper
+$ cd my_wrapper
 ```
 
 Add a line to the end of `Policyfile.rb` to specify the location of
@@ -379,8 +414,8 @@ node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
 include_recipe 'rails_ubuntu::server_rails'
 ```
 
-You can include the `rails_ubuntu::server_rails` master recipe or only
-include the individual recipes that make sense for you.
+You can include the `rails_ubuntu::server_rails` server recipe or only
+include the individual feature recipes that make sense for you.
 
 You can copy recipes from `rails_ubuntu` into your cookbook so that you
 can customize them to better meet your needs.
@@ -447,7 +482,8 @@ installers for your OS directly from Vagrant and Virtualbox.
 - https://www.virtualbox.org/wiki/Downloads
 
 We can configure the Vagrant guests to use port forwarding like this
-or we can use the private network option as shown in the Vagrantfiles below.
+or we can use the private or public network options as shown in the
+Vagrantfiles below.
 
 ```
   config.vm.network :forwarded_port, guest: 22, host: 8022
@@ -472,9 +508,16 @@ vagrant@bento18 ~ $
 ```
 
 You can run the standard Ubuntu Virtualbox Vagrant servers with these
-`Vagrantfile` configurations.
+Vagrantfile configurations.
 
-## Ubuntu Xenial 16.04 Vagrantfile ##
+`Private Network` will make your VM visible from within your workstation.
+If you have several VMs, for example a database server, a redis server
+and a Rails server, they will be able to communicate with each other.
+
+`Public Network` will make your VM visible within the same network that
+your workstation is in, as if it was a separate workstation.
+
+## Ubuntu 16.04 Private Network Vagrantfile ##
 
 ```
 Vagrant.configure('2') do |config|
@@ -493,7 +536,7 @@ Vagrant.configure('2') do |config|
 end
 ```
 
-## Ubuntu Bionic 18.04 Vagrantfile ##
+## Ubuntu 18.04 Private Network Vagrantfile ##
 
 ```
 Vagrant.configure('2') do |config|
@@ -511,6 +554,26 @@ Vagrant.configure('2') do |config|
   config.vm.network :private_network, type: :dhcp
 end
 ```
+
+## Ubuntu 18.04 Public Network Vagrantfile ##
+
+```
+Vagrant.configure('2') do |config|
+  config.vm.box       = "bento/ubuntu-18.04"
+  config.vm.hostname  = 'public'
+  config.vm.provider    :virtualbox
+
+  config.vm.network :public_network
+end
+```
+
+You will be prompted for the network that your VM will appear on.
+You can avoid future prompts by specifying the exact bridge description string.
+
+```
+config.vm.network :public_network, bridge: 'en0: Wi-Fi (AirPort)'
+```
+
 
 # Troubleshooting #
 
@@ -532,7 +595,7 @@ systemctl restart nginx
 
 For a local vagrant server that would be something like `http://172.16.166.208`.
 
-Once it is woken up, you can examine the passenger status.
+Once it is woken up, you can examine the Passenger status.
 
 ```
 # passenger-status
@@ -544,11 +607,18 @@ Once it is woken up, you can examine the passenger status.
     CPU: 13%     Memory  : 35M     Last used: 4s ago
 ```
 
-You can ask passenger to restart the application after making changes.
+You can ask Passenger to restart the application after making changes.
 
 ```
 # passenger-config restart-app /
 Restarting /home/vagrant/activity-timer/current (production)
+```
+
+If `passenger-status` is not showing your application, look at the
+Nginx error and access logs.
+
+```
+# vi /var/log/nginx/error.log
 ```
 
 When in doubt, restart nginx again which will completely reload and restart

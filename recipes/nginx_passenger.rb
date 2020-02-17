@@ -4,14 +4,18 @@
 
 return if skip_recipe
 
-server_name   = node['rails_ubuntu']['server_name']
-app_name      = node['rails_ubuntu']['app_name']
-rails_env     = node['rails_ubuntu']['rails_env']
 deploy_user   = node['rails_ubuntu']['deploy_user']
 deploy_group  = node['rails_ubuntu']['deploy_group']
-deploy_to     = node['rails_ubuntu']['deploy_to']
 
-deploy_dir = deploy_to || "#{Dir.home}/#{app_name}"
+server_name   = node['rails_ubuntu']['server_name']
+app_type      = node['rails_ubuntu']['app_type'] || 'rails'
+rails_env     = node['rails_ubuntu']['rails_env']
+app_env       = node['rails_ubuntu']['app_env'] || rails_env || 'production'
+app_name      = node['rails_ubuntu']['app_name'] || 'myapp'
+deploy_to     = node['rails_ubuntu']['deploy_to'] || "#{Dir.home}/#{app_name}"
+app_root      = node['rails_ubuntu']['app_root'] || "#{deploy_to}/current"
+app_public    = node['rails_ubuntu']['app_public'] || "#{app_root}/public"
+app_startup   = node['rails_ubuntu']['app_startup'] || 'app.js'
 
 platform_version = node['platform_version']
 ubuntu_name =
@@ -26,7 +30,7 @@ ubuntu_name =
 
 chef_log('began')
 
-directory deploy_dir do
+directory deploy_to do
   owner deploy_user
   group deploy_group
   mode '0755'
@@ -69,10 +73,17 @@ when '16.04'
     line 'include /etc/nginx/passenger.conf;'
   end
 
-  replace_or_add 'passenger.conf' do
-    path '/etc/nginx/passenger.conf'
-    pattern '.*passenger_ruby.*'
-    line "passenger_ruby #{Dir.home}/.rbenv/shims/ruby;"
+  bash 'passenger.conf' do
+    code <<-EOT
+      #{bash_began('passenger.conf')}
+
+      [ -e #{Dir.home}/.rbenv ] && {
+        pc=/etc/nginx/passenger.conf
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
+      }
+
+      #{bash_ended('passenger.conf')}
+    EOT
   end
 
 when '18.04', '20.04'
@@ -89,10 +100,17 @@ when '18.04', '20.04'
     EOT
   end
 
-  replace_or_add 'mod-http-passenger.conf' do
-    path '/etc/nginx/conf.d/mod-http-passenger.conf'
-    pattern '.*passenger_ruby.*'
-    line "passenger_ruby #{Dir.home}/.rbenv/shims/ruby;"
+  bash 'passenger.conf' do
+    code <<-EOT
+      #{bash_began('passenger.conf')}
+
+      [ -e #{Dir.home}/.rbenv ] && {
+        pc=/etc/nginx/conf.d/mod-http-passenger.conf
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
+      }
+
+      #{bash_ended('passenger.conf')}
+    EOT
   end
 
 else
@@ -104,18 +122,24 @@ link '/etc/nginx/sites-enabled/default' do
 end
 
 template "/etc/nginx/sites-enabled/#{app_name}" do
-  source 'nginx_site.erb'
+  source "nginx_#{app_type}.erb"
   action :create_if_missing
   variables(
+    deploy_user: deploy_user,
+    deploy_group: deploy_group,
     server_name: server_name,
+    app_type: app_type,
+    app_env: app_env,
     app_name: app_name,
-    rails_env: rails_env,
-    deploy_dir: deploy_dir
+    deploy_to: deploy_to,
+    app_root: app_root,
+    app_public: app_public,
+    app_startup: app_startup
   )
 end
 
 service 'nginx' do
-  action [ :enable, :start ]
+  action [ :enable, :restart ]
 end
 
 chef_log('ended')

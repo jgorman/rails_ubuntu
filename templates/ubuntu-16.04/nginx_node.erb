@@ -1,0 +1,11 @@
+server {
+  listen 80;
+  listen [::]:80 ipv6only=on;
+  server_name <%= @server_name %>;
+
+  root <%= @app_public %>;
+
+  passenger_enabled on;
+  passenger_app_type node;
+  passenger_startup_file <%= @app_startup %>;
+}

@@ -2,7 +2,7 @@
 
 return if skip_recipe
 
-redis_unsafe = node['rails_ubuntu']['redis_unsafe']
+redis_safe = node['rails_ubuntu']['redis_safe']
 
 bash 'redis' do
   code <<-EOT
@@ -18,7 +18,7 @@ bash 'redis' do
   EOT
 end
 
-if redis_unsafe == 'unsafe'
+if redis_safe == 'unsafe'
   replace_or_add 'redis_unprotected' do
     path '/etc/redis/redis.conf'
     pattern '^protected-mode.*'

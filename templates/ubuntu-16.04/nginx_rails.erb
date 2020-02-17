@@ -4,8 +4,8 @@ server {
 
   server_name <%= @server_name %>;
   passenger_enabled on;
-  rails_env <%= @rails_env %>;
-  root <%= @deploy_dir %>/current/public;
+  rails_env <%= @app_env %>;
+  root <%= @app_public %>;
 
   # redirect server error pages to the static page /50x.html
   error_page   500 502 503 504  /50x.html;

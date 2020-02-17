@@ -5,7 +5,7 @@ return if skip_recipe
 db_user     = node['rails_ubuntu']['db_user']
 db_password = node['rails_ubuntu']['db_password']
 db_name     = node['rails_ubuntu']['db_name']
-db_unsafe   = node['rails_ubuntu']['db_unsafe']
+db_safe     = node['rails_ubuntu']['db_safe']
 
 bash 'postgres_install' do
   code <<-EOT
@@ -18,7 +18,7 @@ bash 'postgres_install' do
   EOT
 end
 
-if db_unsafe == 'unsafe'
+if db_safe == 'unsafe'
   bash 'postgres_unsafe' do
     code <<-EOT
       #{bash_began('postgres_unsafe')}

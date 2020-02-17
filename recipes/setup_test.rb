@@ -1,7 +1,6 @@
 # Setup for test/integration/default.rb
 
-app_name = 'activity-timer'
-node.default['rails_ubuntu']['app_name']      = app_name
+node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 node.default['rails_ubuntu']['ruby_version']  = '2.6.5'
 node.default['rails_ubuntu']['node_version']  = '12'
 
@@ -9,8 +8,8 @@ node.default['rails_ubuntu']['db_type']       = 'all'
 node.default['rails_ubuntu']['db_user']       = 'rails'
 node.default['rails_ubuntu']['db_password']   = 'rails123'
 node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
-node.default['rails_ubuntu']['db_unsafe']     = 'unsafe'
-node.default['rails_ubuntu']['redis_unsafe']  = 'unsafe'
+node.default['rails_ubuntu']['db_safe']       = 'unsafe'
+node.default['rails_ubuntu']['redis_safe']    = 'unsafe'
 
 node.default['rails_ubuntu']['bash_aliases']  += <<EOT
 
@@ -25,7 +24,7 @@ alias va='vi ~/.bash_aliases; exec bash'
 alias vb='vi ~/.bashrc; exec bash'
 alias bb='exec bash'
 
-export R=~/#{app_name}/current
+[ -z "$R" ] && export R=~/#{node['rails_ubuntu']['app_name']}/current
 alias S.='export R=`pwd`; R'
 alias R='cd $R && ls -l'
 alias Rcon='cd $R/config && ls -l'
@@ -41,5 +40,16 @@ vi() {
   vim "$@"
 }
 EOT
+
+#node.default['rails_ubuntu']['app_type'] = 'node'
+#node.default['rails_ubuntu']['app_name'] = 'wifi-watch'
+#node.default['rails_ubuntu']['app_root'] = "#{Dir.home}/wifi-watch/wifi-service"
+#node.default['rails_ubuntu']['app_startup'] = 'app.js'
+#include_recipe 'rails_ubuntu::nginx_passenger'
+
+#edit_resource(:template, '/etc/nginx/sites-enabled/activity-timer') do
+#  source 'nginx_rails2.erb'
+#  cookbook 'rails_ubuntu'
+#end
 
 include_recipe 'rails_ubuntu::server_rails'
