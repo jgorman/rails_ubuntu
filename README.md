@@ -47,7 +47,7 @@ for a Vagrant box.
 
 ```
 root # adduser vagrant
-root # echo "vagrant ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/vagrant
+root # echo 'vagrant ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/vagrant
 root # su vagrant
 vagrant $ sudo su # No password prompt.
 root #
@@ -167,7 +167,7 @@ You can replace or extend the basic package list.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
 ```
-node.default['rails_ubuntu']['apt_install'] += + ' sqlite3'
+node.default['rails_ubuntu']['apt_install'] += ' sqlite3'
 ```
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
@@ -523,9 +523,11 @@ your workstation is in, as if it was a separate workstation.
 
 ```
 Vagrant.configure('2') do |config|
-  config.vm.box       = "bento/ubuntu-16.04"
+  config.vm.box       = 'bento/ubuntu-16.04'
   config.vm.hostname  = 'bento16'
-  config.vm.provider    :virtualbox
+  config.vm.provider    :virtualbox do |v|
+    v.cpus = 4
+  end
 
   # Vagrant private network dhcp issue.
   # https://github.com/hashicorp/vagrant/issues/3083
@@ -542,9 +544,11 @@ end
 
 ```
 Vagrant.configure('2') do |config|
-  config.vm.box       = "bento/ubuntu-18.04"
+  config.vm.box       = 'bento/ubuntu-18.04'
   config.vm.hostname  = 'bento18'
-  config.vm.provider    :virtualbox
+  config.vm.provider    :virtualbox do |v|
+    v.cpus = 4
+  end
 
   # Vagrant private network dhcp issue.
   # https://github.com/hashicorp/vagrant/issues/3083
@@ -561,9 +565,11 @@ end
 
 ```
 Vagrant.configure('2') do |config|
-  config.vm.box       = "bento/ubuntu-18.04"
+  config.vm.box       = 'bento/ubuntu-18.04'
   config.vm.hostname  = 'public'
-  config.vm.provider    :virtualbox
+  config.vm.provider    :virtualbox do |v|
+    v.cpus = 4
+  end
 
   config.vm.network :public_network
 end
