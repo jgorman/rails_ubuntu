@@ -18,16 +18,12 @@ app_public    = node['rails_ubuntu']['app_public'] || "#{app_root}/public"
 app_startup   = node['rails_ubuntu']['app_startup'] || 'app.js'
 nginx_site    = node['rails_ubuntu']['nginx_site'] || app_name
 
-platform_version = node['platform_version']
-ubuntu_name =
-  case platform_version
-  when '16.04'
-    'xenial'
-  when '18.04'
-    'bionic'
-  else
-    raise "Untested Ubuntu version '#{platform_version}'"
-  end
+codename      = node['lsb']['codename']
+case codename
+when 'xenial', 'bionic'
+else
+  raise "Untested Ubuntu version '#{codename}'"
+end
 
 chef_log('began')
 
@@ -47,7 +43,7 @@ bash 'nginx_passenger' do
       --keyserver hkp://keyserver.ubuntu.com:80 \
       --recv-keys 561F9B9CAC40B2F7
 
-    echo 'deb https://oss-binaries.phusionpassenger.com/apt/passenger #{ubuntu_name} main' > /etc/apt/sources.list.d/passenger.list
+    echo 'deb https://oss-binaries.phusionpassenger.com/apt/passenger #{codename} main' > /etc/apt/sources.list.d/passenger.list
 
     apt-get update -qq
 
@@ -55,16 +51,16 @@ bash 'nginx_passenger' do
   EOT
 end
 
-case platform_version
+case codename
 
-when '16.04'
-  bash 'nginx-16.04' do
+when 'xenial'
+  bash 'nginx-install' do
     code <<-EOT
-      #{bash_began('nginx-16.04')}
+      #{bash_began('nginx-install')}
 
       apt-get install -y -qq nginx-extras passenger
 
-      #{bash_ended('nginx-16.04')}
+      #{bash_ended('nginx-install')}
     EOT
   end
 
@@ -87,17 +83,17 @@ when '16.04'
     EOT
   end
 
-when '18.04', '20.04'
-  bash 'nginx-18.04' do
+when 'bionic'
+  bash 'nginx-install' do
     code <<-EOT
-      #{bash_began('nginx-18.04')}
+      #{bash_began('nginx-install')}
 
       apt-get install -y -qq nginx-extras libnginx-mod-http-passenger
       [ -f /etc/nginx/modules-enabled/50-mod-http-passenger.conf ] ||
         ln -s /usr/share/nginx/modules-available/mod-http-passenger.load \
           /etc/nginx/modules-enabled/50-mod-http-passenger.conf
 
-      #{bash_ended('nginx-18.04')}
+      #{bash_ended('nginx-install')}
     EOT
   end
 
@@ -115,7 +111,7 @@ when '18.04', '20.04'
   end
 
 else
-  raise "Untested Ubuntu version '#{platform_version}'"
+  raise "Untested Ubuntu version '#{codename}'"
 end
 
 link '/etc/nginx/sites-enabled/default' do

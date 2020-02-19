@@ -8,13 +8,18 @@ describe file('/root/.bash_aliases') do
   its('content') { should match(/^alias/) }
 end
 
-describe service('nginx') do
-  it { should be_installed }
-  it { should be_enabled }
-  it { should be_running }
+describe command('rg') do
+  it { should exist }
 end
-describe port(80) do
-  it { should be_listening }
+
+describe command('/home/vagrant/.rbenv/shims/ruby --version') do
+  its('exit_status') { should cmp 0 }
+  its('stdout') { should match /^ruby 2\.6\.5/ }
+end
+
+describe command('node --version') do
+  its('exit_status') { should cmp 0 }
+  its('stdout') { should match /^v12/ }
 end
 
 describe service('redis-server') do
@@ -24,6 +29,20 @@ describe service('redis-server') do
 end
 describe port(6379) do
   it { should be_listening }
+end
+
+describe service('nginx') do
+  it { should be_installed }
+  it { should be_enabled }
+  it { should be_running }
+end
+describe port(80) do
+  it { should be_listening }
+end
+
+describe command('passenger-status') do
+  its('exit_status') { should cmp 0 }
+  its('stdout') { should match /Phusion_Passenger/ }
 end
 
 describe service('postgresql') do
@@ -44,16 +63,11 @@ describe port(3306) do
   it { should be_listening }
 end
 
-describe command('/home/vagrant/.rbenv/shims/ruby --version') do
-  its('exit_status') { should cmp 0 }
-  its('stdout') { should match /^ruby 2\.6\.5/ }
+describe service('proxysql') do
+  it { should be_installed }
+  it { should be_enabled }
+  it { should be_running }
 end
-
-describe command('node --version') do
-  its('exit_status') { should cmp 0 }
-  its('stdout') { should match /^v12/ }
-end
-
-describe command('rg') do
-  it { should exist }
+describe port(6032) do
+  it { should be_listening }
 end

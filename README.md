@@ -8,7 +8,7 @@ A big shout out to [Chris Oliver](https://gorails.com/users/1)!
 
 - https://gorails.com/deploy/ubuntu/18.04
 
-Tested on Ubuntu 16.04 and 18.04 with Postgres and Mysql.
+Tested on Ubuntu 16.04 and 18.04 with Postgres and MySQL.
 
 Available from the Chef Supermarket or the latest version on Github.
 
@@ -140,9 +140,10 @@ any time to keep all of your servers up to date with application changes.
 
 - `server_rails` - Complete Rails server includes all features.
 - `server_node` - Complete Node server without Ruby.
-- `server_database` - Database server: Postgres or Mysql.
+- `server_database` - Database server: Postgres or MySQL.
 - `server_postgres` - Postgres server.
-- `server_mysql` - Mysql server.
+- `server_mysql` - MySQL server.
+- `server_proxysql` - ProxySQL MySQL proxy server.
 - `server_redis` - Redis server.
 - `server_ruby` - Capistrano deploy workstation.
 - `server_basic` - Basic tools.
@@ -272,7 +273,7 @@ end
 
 Your template has access to all of the attributes listed above.
 
-## `database` - Install Postgres or Mysql and create database ##
+## `database` - Install Postgres or MySQL and create database ##
 
 Attributes: `db_type` (postgres | mysql)
 Attributes: `db_user`, `db_password`, `db_name`, `db_unsafe`
@@ -299,16 +300,20 @@ the `postgres` unix user.
 sudo su postgres -c psql
 ```
 
-## `mysql` - Install Mysql and create database ##
+## `mysql` - Install MySQL and create database ##
 
-Mysql setup can be called directly or via the `database` recipe.
+MySQL setup can be called directly or via the `database` recipe.
 
-You can gain access to the `root` Mysql database user from
+You can gain access to the `root` MySQL database user from
 the `root` unix user.
 
 ```
 sudo su -c mysql
 ```
+
+## `proxysql` - Install ProxySQL MySQL proxy service ##
+
+Attributes: `proxysql_version`
 
 ## `setup_test` - Wrapper example ##
 
@@ -329,6 +334,7 @@ default['rails_ubuntu']['deploy_group'] = 'vagrant'
 
 default['rails_ubuntu']['ruby_version'] = '2.6.5'
 default['rails_ubuntu']['node_version'] = '12'
+default['rails_ubuntu']['proxysql_version'] = '2.0'
 
 default['rails_ubuntu']['server_name']  = node['fqdn']
 #default['rails_ubuntu']['app_type']    = 'rails' # rails | node
