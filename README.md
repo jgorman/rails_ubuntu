@@ -15,15 +15,15 @@ Available from the Chef Supermarket or the latest version on Github.
 - https://supermarket.chef.io/cookbooks/rails_ubuntu
 - https://github.com/jgorman/rails_ubuntu
 
-Here are three steps to a running Ubuntu Rails or Node server.
+Here are four steps to a running Ubuntu Rails or Node application.
 
-1. [Add the Deploy User](#1-add-the-deploy-user)
-2. [Run Chef to Provision the Server](#2-run-chef-to-provision-the-server)
-3. [Run Capistrano to Install Rails](#3-run-capistrano-to-install-rails)
+1. [SSH Key Forwarding](#1-ssh-key-forwarding)
+2. [Add the Deploy User](#2-add-the-deploy-user)
+3. [Provision the Server With Chef](#3-provision-the-server-with-chef)
+4. [Deploy Your Application With Capistrano](#4-deploy-your-application-with-capistrano)
 
 Then you can run `cap production deploy` any time to effortlessly update
-your Rails applications running on all of your test, staging,
-and production servers!
+your applications running on all of your test, staging, and production servers!
 
 See below for more information.
 
@@ -34,62 +34,67 @@ See below for more information.
 - [Vagrant Setup](#vagrant-setup)
 - [Troubleshooting](#troubleshooting)
 
+# 1. SSH Key Forwarding #
 
-# 1. Add the Deploy User #
+Both Chef and Capistrano depend on you forwarding your ssh key from
+your workstation to the target server.
+
+Add your key to ssh-agent.
+
+```bash
+ssh-add -K # Add your id_rsa key to the keychain.
+ssh-add -L # You should see your key.
+```
+
+Configure ssh-agent key forwarding.
+
+```
+vi ~/.ssh/config
+Host *
+ForwardAgent yes
+```
+
+
+# 2. Add the Deploy User #
 
 These instructions are for setting up the deploy user for a live server.
 See the section below for [Vagrant setup](#vagrant-setup).
 
-### 1.1. Deploy User with Passwordless Sudo ###
+### 2.1. Deploy User with Passwordless Sudo ###
 
 Any user name will work, such as the default user name `vagrant`
 for a Vagrant box.
 
-```
-root # adduser vagrant
-root # echo 'vagrant ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/vagrant
-root # su vagrant
+```bash
+root $ adduser vagrant
+root $ echo 'vagrant ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/vagrant
+root $ su vagrant
 vagrant $ sudo su # No password prompt.
-root #
+root $
 ```
 
-### 1.2. Deploy User with Passwordless Ssh ###
+### 2.2. Deploy User with Passwordless SSH ###
 
 Set up passwordless ssh from your workstation user to the deploy user.
 
-Run `ssh-copy-id` on the workstation that you will be deploying your
-Rails application from.
-
 ```
 me@mymac $ brew install ssh-copy-id
-me@mymac $ ssh-copy-id vagrant@vagrant-box
-vagrant@vagrant-box's password:
+me@mymac $ ssh-copy-id vagrant@bento18
+vagrant@bento18's password:
 Number of key(s) added:        1
+me@mymac $ ssh vagrant@bento18
+vagrant@bento18 $
 ```
 
-Or manually copy your `~/.ssh/id_rsa.pub` file into place.
 
-```
-vagrant@vagrant-box $ mkdir .ssh
-vagrant@vagrant-box $ chmod 700 .ssh
-vagrant@vagrant-box $ vi .ssh/authorized_keys
-```
-
-Then test passwordless ssh.
-
-```
-me@mymac $ ssh vagrant@vagrant-box
-vagrant@vagrant-box $
-```
-
-# 2. Run Chef to Provision the Server #
+# 3. Provision the Server With Chef #
 
 Here is an example of using a [wrapper cookbook](#wrapper-cookbooks)
 to configure and call the `rails_ubuntu` cookbook.
 
 ```
 me@mymac $ cd cookbooks/my_wrapper
-me@mymac $ chef-run -i ~/.ssh/id_rsa vagrant@demo my_wrapper::demo_server
+me@mymac $ chef-run vagrant@bento18 my_wrapper::myapp_recipe
 ```
 
 If you see the message
@@ -97,20 +102,16 @@ If you see the message
 this is Ubuntu running the post-boot automatic package upgrade.
 Wait for a few minutes for this to complete and try running the cookbook again.
 
-Most of the recipes run bash scripts to install and configure
-packages from outside of Ubuntu.
-
-In order to make sense of what is happening and to see
-errors the bash scripts all log to `~deploy/chef.log`.
-
-You can watch the provisioning process run on the target server in real time.
+In order to make sense of what is happening and to see errors the recipes
+all log to `~deploy/chef.log`. You can watch the provisioning process
+run on the target server in real time.
 
 ```
-vagrant@vagrant-box ~ $ touch chef.log
-vagrant@vagrant-box ~ $ tail -f chef.log
+vagrant@bento18 ~ $ touch chef.log
+vagrant@bento18 ~ $ tail -f chef.log
 ```
 
-# 3. Run Capistrano to Install Rails #
+# 4. Deploy Your Application With Capistrano #
 
 Set up your workstation with the Capistrano gems.
 
@@ -118,7 +119,7 @@ Set up your workstation with the Capistrano gems.
 gem install capistrano capistrano-rails capistrano-passenger capistrano-rbenv
 ```
 
-Set up your Rails application for deployment with Capistrano following
+Set up your application for deployment with Capistrano following
 this guide.
 
 https://gorails.com/deploy/ubuntu/18.04#capistrano
@@ -150,7 +151,7 @@ any time to keep all of your servers up to date with application changes.
 
 You can set the `skip_recipes` attribute to skip unnecessary features.
 
-```
+```ruby
 node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 ```
 
@@ -162,14 +163,18 @@ Always a good idea when provisioning a server.
 
 ## `apt_install` - Install basic packages ##
 
-Attributes: `apt_install`
+Attributes: `apt_install`, `open_files`
 
 You can replace or extend the basic package list.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
-```
+```ruby
 node.default['rails_ubuntu']['apt_install'] += ' sqlite3'
 ```
+
+This recipe will update the number of open files allowed,
+which takes effect on the next server reboot.
+Set `open_files = 0` to disable this.
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
@@ -180,7 +185,7 @@ Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
 You can replace or extend the `.bash_aliases` file content.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
-```
+```ruby
 node.default['rails_ubuntu']['bash_aliases'] += <<EOT
 export PS1='\\u@\\h \\w \\\$ '
 alias peg='ps -ef | grep'
@@ -207,7 +212,7 @@ many deprecation warnings in preparation for Ruby 3.0.
 You can replace or extend the ruby library packages.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
-```
+```ruby
 node.default['rails_ubuntu']['ruby_libs'] += ' libncurses5-dev'
 ```
 
@@ -219,14 +224,15 @@ The current default node.js version is `12`. This is the latest LTS version.
 
 ## `redis` - Install Redis service ##
 
-Attributes: `redis_unsafe`
+Attributes: `redis_safe`
 
 Install Redis for Action Cable websocket support.
 
-You can set `redis_unsafe` to allow outside connections.
+By default redis listens to server local connections.
+You can set `redis_safe = 'unsafe'` to allow outside connections.
 
-```
-node.default['rails_ubuntu']['redis_unsafe'] = 'unsafe'
+```ruby
+node.default['rails_ubuntu']['redis_safe'] = 'unsafe'
 ```
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
@@ -236,12 +242,12 @@ Attributes: `deploy_user`, `deploy_group`
 - `server_name` = node['fqdn']
 - `app_type`    = 'rails' # rails | node
 - `app_env`     = 'production'
+- `app_startup` = 'app.js'
 - `app_name`    = 'myapp'
+- `nginx_site`  = app_name
 - `deploy_to`   = '/home/<deploy_user>/<app_name>'
 - `app_root`    = '<deploy_to>/current'
 - `app_public`  = '<app_root>/public'
-- `app_startup` = 'app.js'
-- `nginx_site`  = app_name
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
@@ -261,7 +267,7 @@ Be sure to invoke `edit_resource` after you have included
 the recipe that includes the `nginx_passenger` recipe so that
 the nginx template resource is there to edit.
 
-```
+```ruby
 node.default['rails_ubuntu']['app_name'] = 'activity-timer'
 include_recipe 'rails_ubuntu::server_rails'
 
@@ -276,17 +282,19 @@ Your template has access to all of the attributes listed above.
 ## `database` - Install Postgres or MySQL and create database ##
 
 Attributes: `db_type` (postgres | mysql)
-Attributes: `db_user`, `db_password`, `db_name`, `db_unsafe`
+
+Attributes: `db_user`, `db_password`, `db_name`, `db_safe`
 
 If `db_type` is not set, skip database setup.
 
 Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
-You can set `db_unsafe` to allow outside connections.
+By default the database servers only listen to local connections.
+You can set `db_safe = 'unsafe'` to allow outside connections.
 
-```
-node.default['rails_ubuntu']['db_unsafe'] = 'unsafe'
+```ruby
+node.default['rails_ubuntu']['db_safe'] = 'unsafe'
 ```
 
 ## `postgres` - Install Postgres and create database ##
@@ -328,32 +336,35 @@ It also sets up for Chef Cookbook Kitchen testing located at
 
 See `rails_ubuntu/attributes/defaults.rb`
 
-```
+```ruby
 default['rails_ubuntu']['deploy_user']  = 'vagrant'
 default['rails_ubuntu']['deploy_group'] = 'vagrant'
 
 default['rails_ubuntu']['ruby_version'] = '2.6.5'
 default['rails_ubuntu']['node_version'] = '12'
 default['rails_ubuntu']['proxysql_version'] = '2.0'
+default['rails_ubuntu']['open_files']   = 65535   # 0 for no effect.
 
+# Generate /etc/nginx/sites-enabled/<nginx_site> from template.
 default['rails_ubuntu']['server_name']  = node['fqdn']
-#default['rails_ubuntu']['app_type']    = 'rails' # rails | node
-#default['rails_ubuntu']['app_env']     = 'production'
-#default['rails_ubuntu']['app_name']    = 'myapp'
+default['rails_ubuntu']['app_type']     = 'rails' # rails | node
+default['rails_ubuntu']['app_env']      = 'production'
+default['rails_ubuntu']['app_startup']  = 'app.js' # Node app_root/entrypoint.
+default['rails_ubuntu']['app_name']     = 'myapp'
+#default['rails_ubuntu']['nginx_site']  = app_name
 #default['rails_ubuntu']['deploy_to']   = '/home/<deploy_user>/<app_name>'
 #default['rails_ubuntu']['app_root']    = '<deploy_to>/current'
 #default['rails_ubuntu']['app_public']  = '<app_root>/public'
-#default['rails_ubuntu']['app_startup'] = 'app.js'
-#default['rails_ubuntu']['nginx_site']  = app_name
 
-default['rails_ubuntu']['db_type']      = 'none' # postgres | mysql
+# Local database server.
+default['rails_ubuntu']['db_type']      = 'none'  # postgres | mysql
 #default['rails_ubuntu']['db_user']     =
 #default['rails_ubuntu']['db_password'] =
 #default['rails_ubuntu']['db_name']     =
-#default['rails_ubuntu']['db_safe']     = 'safe' # safe | unsafe
+default['rails_ubuntu']['db_safe']      = 'safe'  # safe | unsafe
 
-#default['rails_ubuntu']['redis_safe']  = 'safe' # safe | unsafe
-#default['rails_ubuntu']['skip_recipes'] = ''    # 'bash_aliases redis'
+default['rails_ubuntu']['redis_safe']   = 'safe'  # safe | unsafe
+default['rails_ubuntu']['skip_recipes'] = ''      # 'redis bash_aliases'
 
 default['rails_ubuntu']['bash_aliases'] = <<EOT
 alias l='ls -l'
@@ -381,6 +392,7 @@ that you want to provision.
 Navigate to your cookbooks directory and generate a new cookbook.
 
 ```
+$ cd && mkdir cookbooks && cd cookbooks
 $ chef generate cookbook my_wrapper
 $ cd my_wrapper
 ```
@@ -390,28 +402,28 @@ the `rails_ubuntu` cookbook.
 
 From the Chef Cookbook Supermarket.
 
-```
+```ruby
 cookbook 'rails_ubuntu', '~> 0.1', :supermarket
 ```
 
 Or use the latest Github version.
 
-```
+```ruby
 cookbook 'rails_ubuntu', github: 'jgorman/rails_ubuntu'
 ```
 
 Add a line to the end of `metadata.rb` to tell Chef to load
 the `rails_ubuntu` cookbook.
 
-```
+```ruby
 depends 'rails_ubuntu'
 ```
 
 Then make a new recipe that configures your new server type.
 
-```
+```ruby
 $ cd recipes
-$ cat >demo_server.rb
+$ vi myapp_recipe.rb
 node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 
 node.default['rails_ubuntu']['db_type']       = 'postgres'
@@ -435,7 +447,7 @@ The easiest way to test your wrapper configuration is to use
 `chef-run` to provision throwaway Vagrant servers.
 
 You can spin up a fresh new Vagrant box, provision it,
-and deploy your Rails application within minutes. Once that
+and deploy your application within minutes. Once that
 works for your application you can deploy to a live Ubuntu server.
 
 Download and install Chef Workstation
@@ -446,20 +458,20 @@ https://downloads.chef.io/chef-workstation/
 
 Configure your default cookbook locations.
 
-```
+```bash
 $ vi ~/.chef/config.rb
-cookbook_path ["/Users/u/rails/github/chef/cookbooks"]
+cookbook_path ["/Users/me/cookbooks"]
 ```
 
 Configure the Chef debug log location. The `stack-trace.log` file
 will be created in the same directory when there is a ruby
 compile error.
 
-```
+```toml
 $ vi ~/.chef-workstation/config.toml
 [log]
 level="debug"
-location="/Users/u/rails/github/chef/chef-run.log"
+location="/Users/me/cookbooks/chef-run.log"
 ```
 
 For recipe debugging, `puts "Helpful debugging messages!"`
@@ -469,7 +481,7 @@ to watch the deployment progress in real time.
 
 # Vagrant Setup #
 
-Use the standard Chef Bento Ubuntu Vagrant boxes.
+You can use the standard Ubuntu or Chef Bento Vagrant boxes.
 
 - 16.04 Xenial https://app.vagrantup.com/bento/boxes/ubuntu-16.04
 - 18.04 Bionic https://app.vagrantup.com/bento/boxes/ubuntu-18.04
@@ -489,34 +501,26 @@ installers for your OS directly from Vagrant and Virtualbox.
 - https://www.vagrantup.com/downloads.html
 - https://www.virtualbox.org/wiki/Downloads
 
-We can configure the Vagrant guests to use port forwarding like this
-or we can use the private or public network options as shown in the
-Vagrantfiles below.
-
-```
-  config.vm.network :forwarded_port, guest: 22, host: 8022
-  config.vm.network :forwarded_port, guest: 80, host: 8080
-```
-
 Make a directory, copy one of the Vagrantfiles below into it, bring up
-the vm, and get the dhcp assigned ip address.
+the vm, and get the dhcp assigned ip address. You can assign a name to
+the ip address in `/etc/hosts`.
 
 ```
 me@mymac $ mkdir bento18
 me@mymac $ cd bento18
-me@mymac $ cat >Vagrantfile
+me@mymac $ vi Vagrantfile
 me@mymac $ vagrant up
 me@mymac $ vagrant ssh -c ifconfig | grep 'inet '
         inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
         inet 172.28.128.17  netmask 255.255.255.0  broadcast 172.28.128.255
         inet 127.0.0.1  netmask 255.0.0.0
-me@mymac $ ssh vagrant@172.28.128.17
-vagrant@172.28.128.17's password: vagrant
+me@mymac $ sudo vi /etc/hosts
+172.28.128.17 bento18
+me@mymac $ ssh vagrant@bento18
 vagrant@bento18 ~ $
 ```
 
-You can run the standard Ubuntu Virtualbox Vagrant servers with these
-Vagrantfile configurations.
+Here are some example Vagrantfile configurations.
 
 `Private Network` will make your VM visible from within your workstation.
 If you have several VMs, for example a database server, a redis server
@@ -527,7 +531,7 @@ your workstation is in, as if it was a separate workstation.
 
 ## Ubuntu 16.04 Private Network Vagrantfile ##
 
-```
+```ruby
 Vagrant.configure('2') do |config|
   config.vm.box       = 'bento/ubuntu-16.04'
   config.vm.hostname  = 'bento16'
@@ -535,20 +539,20 @@ Vagrant.configure('2') do |config|
     v.cpus = 4
   end
 
-  # Vagrant private network dhcp issue.
-  # https://github.com/hashicorp/vagrant/issues/3083
+  # Private network issue. https://github.com/hashicorp/vagrant/issues/3083
   config.trigger.before [ :up, :reload, :provision ] do |trigger|
     trigger.ruby do |env,machine|
       `VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 2>/dev/null`
     end
   end
+
   config.vm.network :private_network, type: :dhcp
 end
 ```
 
 ## Ubuntu 18.04 Private Network Vagrantfile ##
 
-```
+```ruby
 Vagrant.configure('2') do |config|
   config.vm.box       = 'bento/ubuntu-18.04'
   config.vm.hostname  = 'bento18'
@@ -556,20 +560,20 @@ Vagrant.configure('2') do |config|
     v.cpus = 4
   end
 
-  # Vagrant private network dhcp issue.
-  # https://github.com/hashicorp/vagrant/issues/3083
+  # Private network issue. https://github.com/hashicorp/vagrant/issues/3083
   config.trigger.before [ :up, :reload, :provision ] do |trigger|
     trigger.ruby do |env,machine|
       `VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 2>/dev/null`
     end
   end
+
   config.vm.network :private_network, type: :dhcp
 end
 ```
 
 ## Ubuntu 18.04 Public Network Vagrantfile ##
 
-```
+```ruby
 Vagrant.configure('2') do |config|
   config.vm.box       = 'bento/ubuntu-18.04'
   config.vm.hostname  = 'public'
@@ -584,15 +588,15 @@ end
 You will be prompted for the network that your VM will appear on.
 You can avoid future prompts by specifying the exact bridge description string.
 
-```
+```ruby
 config.vm.network :public_network, bridge: 'en0: Wi-Fi (AirPort)'
 ```
 
 
 # Troubleshooting #
 
-Make sure that the Rails runs from the command line and examine
-`production.log` to see what is going wrong.
+Make sure that your application runs from the command line and examine
+`production.log` to look for issues.
 
 ```
 $ cd /home/vagrant/activity-timer/current
@@ -606,8 +610,6 @@ up to test it.
 ```
 systemctl restart nginx
 ```
-
-For a local vagrant server that would be something like `http://172.16.166.208`.
 
 Once it is woken up, you can examine the Passenger status.
 

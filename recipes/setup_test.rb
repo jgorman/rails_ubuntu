@@ -3,6 +3,7 @@
 node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 node.default['rails_ubuntu']['ruby_version']  = '2.6.5'
 node.default['rails_ubuntu']['node_version']  = '12'
+node.default['rails_ubuntu']['open_files']    = 65535
 
 node.default['rails_ubuntu']['db_type']       = 'all'
 node.default['rails_ubuntu']['db_user']       = 'rails'
@@ -41,12 +42,14 @@ vi() {
 }
 EOT
 
+# Node server testing.
 #node.default['rails_ubuntu']['app_type'] = 'node'
 #node.default['rails_ubuntu']['app_name'] = 'wifi-watch'
 #node.default['rails_ubuntu']['app_root'] = "#{Dir.home}/wifi-watch/wifi-service"
 #node.default['rails_ubuntu']['app_startup'] = 'app.js'
 #include_recipe 'rails_ubuntu::nginx_passenger'
 
+# Template replacement testing.
 #edit_resource(:template, '/etc/nginx/sites-enabled/activity-timer') do
 #  source 'nginx_rails2.erb'
 #  cookbook 'rails_ubuntu'

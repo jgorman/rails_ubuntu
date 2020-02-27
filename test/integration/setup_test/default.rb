@@ -3,13 +3,27 @@
 # The InSpec reference, with examples and extensive documentation, can be
 # found at https://www.inspec.io/docs/reference/resources/
 
+describe file('/etc/security/limits.conf') do
+  it { should exist }
+  its('content') { should match(/^[*] soft nofile 65535/) }
+  its('content') { should match(/^[*] hard nofile 65535/) }
+  its('content') { should match(/^root soft nofile 65535/) }
+  its('content') { should match(/^root hard nofile 65535/) }
+end
+
+describe file('/etc/pam.d/common-session') do
+  it { should exist }
+  its('content') { should match(/^session required pam_limits.so/) }
+end
+
 describe file('/root/.bash_aliases') do
   it { should exist }
   its('content') { should match(/^alias/) }
 end
 
-describe command('rg') do
-  it { should exist }
+describe command('rg --version') do
+  its('exit_status') { should cmp 0 }
+  its('stdout') { should match /ripgrep/ }
 end
 
 describe command('/home/vagrant/.rbenv/shims/ruby --version') do
@@ -69,5 +83,8 @@ describe service('proxysql') do
   it { should be_running }
 end
 describe port(6032) do
+  it { should be_listening }
+end
+describe port(6033) do
   it { should be_listening }
 end

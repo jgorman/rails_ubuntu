@@ -4,25 +4,28 @@ default['rails_ubuntu']['deploy_group'] = 'vagrant'
 default['rails_ubuntu']['ruby_version'] = '2.6.5'
 default['rails_ubuntu']['node_version'] = '12'
 default['rails_ubuntu']['proxysql_version'] = '2.0'
+default['rails_ubuntu']['open_files']   = 65535   # 0 for no effect.
 
+# Generate /etc/nginx/sites-enabled/<nginx_site> from template.
 default['rails_ubuntu']['server_name']  = node['fqdn']
-#default['rails_ubuntu']['app_type']    = 'rails' # rails | node
-#default['rails_ubuntu']['app_env']     = 'production'
-#default['rails_ubuntu']['app_name']    = 'myapp'
+default['rails_ubuntu']['app_type']     = 'rails' # rails | node
+default['rails_ubuntu']['app_env']      = 'production'
+default['rails_ubuntu']['app_startup']  = 'app.js' # Node app_root/entrypoint.
+default['rails_ubuntu']['app_name']     = 'myapp'
+#default['rails_ubuntu']['nginx_site']  = app_name
 #default['rails_ubuntu']['deploy_to']   = '/home/<deploy_user>/<app_name>'
 #default['rails_ubuntu']['app_root']    = '<deploy_to>/current'
 #default['rails_ubuntu']['app_public']  = '<app_root>/public'
-#default['rails_ubuntu']['app_startup'] = 'app.js'
-#default['rails_ubuntu']['nginx_site']  = app_name
 
-default['rails_ubuntu']['db_type']      = 'none' # postgres | mysql
+# Local database server.
+default['rails_ubuntu']['db_type']      = 'none'  # postgres | mysql
 #default['rails_ubuntu']['db_user']     =
 #default['rails_ubuntu']['db_password'] =
 #default['rails_ubuntu']['db_name']     =
-#default['rails_ubuntu']['db_safe']     = 'safe' # safe | unsafe
+default['rails_ubuntu']['db_safe']      = 'safe'  # safe | unsafe
 
-#default['rails_ubuntu']['redis_safe']  = 'safe' # safe | unsafe
-#default['rails_ubuntu']['skip_recipes'] = ''    # 'bash_aliases redis'
+default['rails_ubuntu']['redis_safe']   = 'safe'  # safe | unsafe
+default['rails_ubuntu']['skip_recipes'] = ''      # 'redis bash_aliases'
 
 default['rails_ubuntu']['bash_aliases'] = <<EOT
 alias l='ls -l'
