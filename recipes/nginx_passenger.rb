@@ -115,26 +115,28 @@ else
   raise "Untested Ubuntu version '#{codename}'"
 end
 
-link '/etc/nginx/sites-enabled/default' do
-  action :delete
-end
+if app_type == 'rails' || app_type == 'node'
+  link '/etc/nginx/sites-enabled/default' do
+    action :delete
+  end
 
-template "/etc/nginx/sites-enabled/#{nginx_site}" do
-  source "nginx_#{app_type}.erb"
-  action :create_if_missing
-  variables(
-    deploy_user: deploy_user,
-    deploy_group: deploy_group,
-    server_name: server_name,
-    app_type: app_type,
-    app_env: app_env,
-    app_name: app_name,
-    deploy_to: deploy_to,
-    app_root: app_root,
-    app_public: app_public,
-    app_startup: app_startup,
-    nginx_site: nginx_site
-  )
+  template "/etc/nginx/sites-enabled/#{nginx_site}" do
+    source "nginx_#{app_type}.erb"
+    action :create_if_missing
+    variables(
+      deploy_user: deploy_user,
+      deploy_group: deploy_group,
+      server_name: server_name,
+      app_type: app_type,
+      app_env: app_env,
+      app_name: app_name,
+      deploy_to: deploy_to,
+      app_root: app_root,
+      app_public: app_public,
+      app_startup: app_startup,
+      nginx_site: nginx_site
+    )
+  end
 end
 
 service 'nginx' do

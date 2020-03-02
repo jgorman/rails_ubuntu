@@ -3,6 +3,7 @@
 return if skip_recipe
 
 pv  = node['rails_ubuntu']['proxysql_version']
+ssl = node['rails_ubuntu']['proxysql_ssl']
 cn  = node['lsb']['codename']
 
 node.default['rails_ubuntu']['bash_aliases']  += <<EOT
@@ -20,6 +21,13 @@ bash 'proxysql' do
 
     apt-get update -qq
     apt-get install -y -qq proxysql mysql-client
+
+    mysql -u admin -padmin -h 127.0.0.1 -P 6032 << EOT2
+      update global_variables set variable_value = '#{ssl}'
+        where variable_name = 'mysql-have_ssl';
+      load mysql variables to runtime;
+      save mysql variables to disk;
+EOT2
 
     #{bash_ended}
   EOT
