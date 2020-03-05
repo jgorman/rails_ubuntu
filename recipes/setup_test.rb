@@ -9,8 +9,9 @@ node.default['rails_ubuntu']['db_type']       = 'all'
 node.default['rails_ubuntu']['db_user']       = 'rails'
 node.default['rails_ubuntu']['db_password']   = 'rails123'
 node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
-node.default['rails_ubuntu']['db_safe']       = 'unsafe'
-node.default['rails_ubuntu']['redis_safe']    = 'unsafe'
+node.default['rails_ubuntu']['db_safe']       = false
+node.default['rails_ubuntu']['redis_safe']    = false
+node.default['rails_ubuntu']['proxysql_ssl']  = true
 
 node.default['rails_ubuntu']['bash_aliases']  += <<EOT
 

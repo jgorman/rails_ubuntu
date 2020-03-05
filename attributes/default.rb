@@ -22,10 +22,12 @@ default['rails_ubuntu']['db_type']      = 'none'    # none | postgres | mysql
 #default['rails_ubuntu']['db_user']     =
 #default['rails_ubuntu']['db_password'] =
 #default['rails_ubuntu']['db_name']     =
-default['rails_ubuntu']['db_safe']      = 'safe'    # safe | unsafe
+default['rails_ubuntu']['db_safe']      = true      # true | false
 
-default['rails_ubuntu']['proxysql_ssl'] = 'false'   # false | true
-default['rails_ubuntu']['redis_safe']   = 'safe'    # safe | unsafe
+default['rails_ubuntu']['proxysql_ssl'] = false     # false | true
+
+default['rails_ubuntu']['redis_safe']   = true      # true | false
+
 default['rails_ubuntu']['skip_recipes'] = ''        # 'redis bash_aliases'
 
 default['rails_ubuntu']['bash_aliases'] = <<EOT

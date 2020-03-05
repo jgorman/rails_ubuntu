@@ -5,7 +5,7 @@ return if skip_recipe
 db_user     = node['rails_ubuntu']['db_user']
 db_password = node['rails_ubuntu']['db_password']
 db_name     = node['rails_ubuntu']['db_name']
-db_safe     = node['rails_ubuntu']['db_safe']
+db_safe     = node['rails_ubuntu']['db_safe'].to_s =~ /^t/i
 
 bash 'mysql_install' do
   code <<-EOT
@@ -19,7 +19,7 @@ bash 'mysql_install' do
   EOT
 end
 
-if db_safe == 'unsafe'
+unless db_safe
   bash 'mysql_unsafe' do
     code <<-EOT
       #{bash_began('mysql_unsafe')}

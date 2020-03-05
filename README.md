@@ -228,11 +228,11 @@ Attributes: `redis_safe`
 
 Install Redis for Action Cable websocket support.
 
-By default redis listens to server local connections.
-You can set `redis_safe = 'unsafe'` to allow outside connections.
+By default redis plays it safe and only listens to server local connections.
+You can open redis to outside connections.
 
 ```ruby
-node.default['rails_ubuntu']['redis_safe'] = 'unsafe'
+node.default['rails_ubuntu']['redis_safe'] = false
 ```
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
@@ -290,11 +290,11 @@ If `db_type` is not set, skip database setup.
 Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
-By default the database servers only listen to local connections.
-You can set `db_safe = 'unsafe'` to allow outside connections.
+By default the database servers play it safe and only listen to
+server local connections. You can open them up to outside connections.
 
 ```ruby
-node.default['rails_ubuntu']['db_safe'] = 'unsafe'
+node.default['rails_ubuntu']['db_safe'] = false
 ```
 
 ## `postgres` - Install Postgres and create database ##
@@ -331,7 +331,7 @@ mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "
 
 Access the data interface on port 6033.
 
-Set `proxysql_ssl == 'true'`, to configure the data interface for
+Set `proxysql_ssl == true`, to configure the data interface for
 ssl transport. This does not protect the socket itself from login or
 protocol attacks. Don't expose either socket to the open internet.
 Use a VPN or ssh tunnel between servers when traversing an untrusted network.
@@ -374,10 +374,12 @@ default['rails_ubuntu']['db_type']      = 'none'    # none | postgres | mysql
 #default['rails_ubuntu']['db_user']     =
 #default['rails_ubuntu']['db_password'] =
 #default['rails_ubuntu']['db_name']     =
-default['rails_ubuntu']['db_safe']      = 'safe'    # safe | unsafe
+default['rails_ubuntu']['db_safe']      = true      # true | false
 
-default['rails_ubuntu']['proxysql_ssl'] = 'false'   # false | true
-default['rails_ubuntu']['redis_safe']   = 'safe'    # safe | unsafe
+default['rails_ubuntu']['proxysql_ssl'] = false     # false | true
+
+default['rails_ubuntu']['redis_safe']   = true      # true | false
+
 default['rails_ubuntu']['skip_recipes'] = ''        # 'redis bash_aliases'
 
 default['rails_ubuntu']['bash_aliases'] = <<EOT
