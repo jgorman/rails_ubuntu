@@ -2,10 +2,12 @@
 driver:
   name: vagrant
 
-# Run this with "kitchen test".
-# kitchen ignores the suite run_list and uses the Policyfile run_list.
+# Run this with "kitchen verify 18 && kitchen destroy 18".
+#
+# kitchen ignores the suite run_list and uses the Policyfile named_run_list.
+#
 # Be sure to delete Policyfile.lock.json when you make Policyfile changes.
-
+#
 #  network:
 #    - ["forwarded_port", {guest: 80, host: 8080}]
 
@@ -24,7 +26,7 @@ suites:
     verifier:
       inspec_tests:
         - test/integration/setup_test
-    run_list: # kitchen ignores this and uses the Policyfile run_list.
-      - recipe[rails_ubuntu::setup_test]
+    provisioner:
+      named_run_list: kitchen_test
     attributes: {}
 
