@@ -4,7 +4,9 @@ default['rails_ubuntu']['deploy_group'] = 'vagrant'
 default['rails_ubuntu']['ruby_version'] = '2.6.5'
 default['rails_ubuntu']['node_version'] = '12'
 default['rails_ubuntu']['proxysql_version'] = '2.0'
-default['rails_ubuntu']['open_files']   = 65535     # 0 for no effect.
+
+default['rails_ubuntu']['nofile']       =  65535    # 0 for no effect.
+default['rails_ubuntu']['inotify']      = 524288    # 0 for no effect.
 
 # Generate /etc/nginx/sites-enabled/<nginx_site> from template.
 default['rails_ubuntu']['server_name']  = node['fqdn']

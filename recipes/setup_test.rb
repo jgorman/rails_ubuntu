@@ -3,7 +3,9 @@
 node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 node.default['rails_ubuntu']['ruby_version']  = '2.6.5'
 node.default['rails_ubuntu']['node_version']  = '12'
+node.default['rails_ubuntu']['proxysql_version'] = '2.0'
 node.default['rails_ubuntu']['open_files']    = 65535
+node.default['rails_ubuntu']['inotify']       = 524288
 
 node.default['rails_ubuntu']['db_type']       = 'all'
 node.default['rails_ubuntu']['db_user']       = 'rails'

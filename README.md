@@ -159,7 +159,7 @@ node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 
 ## `apt_upgrade` - Upgrade all packages ##
 
-Always a good idea when provisioning a server.
+Always a good idea when provisioning a new server.
 
 ## `apt_install` - Install basic packages ##
 
@@ -172,9 +172,14 @@ See [Attribute Defaults](#attribute-defaults) for the current list.
 node.default['rails_ubuntu']['apt_install'] += ' sqlite3'
 ```
 
-This recipe will update the number of open files allowed,
-which takes effect on the next server reboot.
-Set `open_files = 0` to disable this.
+## `tune` - Tune OS limits ##
+
+Update the number of open files allowed, which takes effect
+on the next server reboot. Set `nofile = 0` to disable this.
+
+Update the number of files that can be watched for changes.
+Set `inotify = 0` to disable this.
+
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
@@ -356,7 +361,9 @@ default['rails_ubuntu']['deploy_group'] = 'vagrant'
 default['rails_ubuntu']['ruby_version'] = '2.6.5'
 default['rails_ubuntu']['node_version'] = '12'
 default['rails_ubuntu']['proxysql_version'] = '2.0'
-default['rails_ubuntu']['open_files']   = 65535     # 0 for no effect.
+
+default['rails_ubuntu']['nofile']       =  65535    # 0 for no effect.
+default['rails_ubuntu']['inotify']      = 524288    # 0 for no effect.
 
 # Generate /etc/nginx/sites-enabled/<nginx_site> from template.
 default['rails_ubuntu']['server_name']  = node['fqdn']
@@ -483,7 +490,7 @@ Configure the Chef debug log location. The `stack-trace.log` file
 will be created in the same directory when there is a ruby
 compile error.
 
-```toml
+```bash
 $ vi ~/.chef-workstation/config.toml
 [log]
 level="debug"
@@ -526,14 +533,24 @@ me@mymac $ mkdir bento18
 me@mymac $ cd bento18
 me@mymac $ vi Vagrantfile
 me@mymac $ vagrant up
-me@mymac $ vagrant ssh -c ifconfig | grep 'inet '
+me@mymac $ vagrant ssh -c 'ip addr show' | grep 'inet '
         inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
         inet 172.28.128.17  netmask 255.255.255.0  broadcast 172.28.128.255
         inet 127.0.0.1  netmask 255.0.0.0
 me@mymac $ sudo vi /etc/hosts
 172.28.128.17 bento18
 me@mymac $ ssh vagrant@bento18
-vagrant@bento18 ~ $
+vagrant@bento18 $
+```
+
+If you get a `permission denied (publickey)` error when logging in with
+a password, you may want to enable this.
+
+```
+me@mymac $ vagrant ssh
+vagrant@bento18 $ sudo vi /etc/ssh/sshd_config
+PasswordAuthentication yes
+vagrant@bento18 $ sudo systemctl restart sshd
 ```
 
 Here are some example Vagrantfile configurations.

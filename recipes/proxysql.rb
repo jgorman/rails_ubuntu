@@ -1,5 +1,7 @@
 # Install proxysql
 
+# https://proxysql.com/documentation/installing-proxysql/
+
 return if skip_recipe
 
 pv  = node['rails_ubuntu']['proxysql_version']

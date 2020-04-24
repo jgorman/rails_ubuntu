@@ -16,6 +16,11 @@ describe file('/etc/pam.d/common-session') do
   its('content') { should match(/^session required pam_limits.so/) }
 end
 
+describe file('/etc/sysctl.conf') do
+  it { should exist }
+  its('content') { should match(/^fs.inotify.max_user_watches=524288/) }
+end
+
 describe file('/root/.bash_aliases') do
   it { should exist }
   its('content') { should match(/^alias/) }

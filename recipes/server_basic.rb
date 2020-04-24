@@ -6,5 +6,6 @@ chef_log('began')
 include_recipe 'rails_ubuntu::bash_aliases'
 include_recipe 'rails_ubuntu::apt_upgrade'
 include_recipe 'rails_ubuntu::apt_install'
+include_recipe 'rails_ubuntu::tune'
 include_recipe 'rails_ubuntu::ripgrep'
 chef_log('ended')
