@@ -3,7 +3,7 @@
 default["rails_ubuntu"]["deploy_user"]  = "vagrant"
 default["rails_ubuntu"]["deploy_group"] = "vagrant"
 
-default["rails_ubuntu"]["ruby_version"] = "2.6.5"
+default["rails_ubuntu"]["ruby_version"] = "2.7.1"
 default["rails_ubuntu"]["node_version"] = "12"
 default["rails_ubuntu"]["proxysql_version"] = "2.0"
 

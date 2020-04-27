@@ -35,7 +35,7 @@ end
 
 describe command("/home/vagrant/.rbenv/shims/ruby --version") do
   its("exit_status") { should cmp 0 }
-  its("stdout") { should match(/^ruby 2\.6\.5/) }
+  its("stdout") { should match(/^ruby 2\.7\.1/) }
 end
 
 describe command("node --version") do

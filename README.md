@@ -211,8 +211,11 @@ rg --hidden DATABASE_URL
 
 Attributes: `ruby_version`, `deploy_user`, `deploy_group`, `ruby_libs`
 
-The current default `ruby-version` is `2.6.5`. Ruby 2.7 triggers
-many deprecation warnings in preparation for Ruby 3.0.
+You can set your preferred ruby version.
+
+```ruby
+node.default["rails_ubuntu"]["ruby_version"] = "2.7.1"
+```
 
 You can replace or extend the ruby library packages.
 See [Attribute Defaults](#attribute-defaults) for the current list.
@@ -358,7 +361,7 @@ See `rails_ubuntu/attributes/defaults.rb`
 default["rails_ubuntu"]["deploy_user"]  = "vagrant"
 default["rails_ubuntu"]["deploy_group"] = "vagrant"
 
-default["rails_ubuntu"]["ruby_version"] = "2.6.5"
+default["rails_ubuntu"]["ruby_version"] = "2.7.1"
 default["rails_ubuntu"]["node_version"] = "12"
 default["rails_ubuntu"]["proxysql_version"] = "2.0"
 
