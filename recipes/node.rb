@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 # Install node and yarn.
 
 return if skip_recipe
 
-node_version = node['rails_ubuntu']['node_version']
+node_version = node["rails_ubuntu"]["node_version"]
 
-bash 'node' do
+bash "node" do
   code <<-EOT
     #{bash_began}
 

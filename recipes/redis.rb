@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 # Install redis service.
 
 return if skip_recipe
 
-redis_safe = node['rails_ubuntu']['redis_safe'].to_s =~ /^t/i
+redis_safe = node["rails_ubuntu"]["redis_safe"].to_s =~ /^t/i
 
-bash 'redis' do
+bash "redis" do
   code <<-EOT
     #{bash_began}
 
@@ -19,24 +21,24 @@ bash 'redis' do
 end
 
 unless redis_safe
-  replace_or_add 'redis_unprotected' do
-    path '/etc/redis/redis.conf'
-    pattern '^protected-mode.*'
-    line 'protected-mode no'
+  replace_or_add "redis_unprotected" do
+    path "/etc/redis/redis.conf"
+    pattern "^protected-mode.*"
+    line "protected-mode no"
   end
 
-  bash 'redis_unbound' do
+  bash "redis_unbound" do
     code <<-EOT
-      #{bash_began('redis_unbound')}
+      #{bash_began("redis_unbound")}
 
       sed -i -e 's/^bind/#bind/' /etc/redis/redis.conf
       systemctl restart redis
 
-      #{bash_ended('redis_unbound')}
+      #{bash_ended("redis_unbound")}
     EOT
   end
 end
 
-service 'redis-server' do
+service "redis-server" do
   action [ :enable, :start ]
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Install ripgrep.
 #
 # https://github.com/BurntSushi/ripgrep#installation
@@ -6,7 +8,7 @@
 
 return if skip_recipe
 
-bash 'ripgrep' do
+bash "ripgrep" do
   code <<-EOT
     #{bash_began}
 

@@ -1,18 +1,20 @@
+# frozen_string_literal: true
+
 # Install proxysql
 
 # https://proxysql.com/documentation/installing-proxysql/
 
 return if skip_recipe
 
-pv  = node['rails_ubuntu']['proxysql_version']
-ssl = node['rails_ubuntu']['proxysql_ssl']
-cn  = node['lsb']['codename']
+pv  = node["rails_ubuntu"]["proxysql_version"]
+ssl = node["rails_ubuntu"]["proxysql_ssl"]
+cn  = node["lsb"]["codename"]
 
-node.default['rails_ubuntu']['bash_aliases']  += <<EOT
+node.default["rails_ubuntu"]["bash_aliases"]  += <<EOT
 alias padmin='mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "'
 EOT
 
-bash 'proxysql' do
+bash "proxysql" do
   code <<-EOT
     #{bash_began}
 
@@ -35,6 +37,6 @@ EOT2
   EOT
 end
 
-service 'proxysql' do
+service "proxysql" do
   action [ :enable, :start ]
 end

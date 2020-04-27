@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #####
 #
 # Log to ~deploy_user/chef.log.
@@ -30,10 +32,10 @@ module ChefLog
   end
 
   def skip_recipe
-    skip_recipes = node[@cookbook_name] && node[@cookbook_name]['skip_recipes']
-    skip_recipes ||= ''
+    skip_recipes = node[@cookbook_name] && node[@cookbook_name]["skip_recipes"]
+    skip_recipes ||= ""
     if skip_recipes.include?(@recipe_name)
-      chef_log('skipped')
+      chef_log("skipped")
       true
     else
       false

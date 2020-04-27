@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 # Install basic packages.
 
 return if skip_recipe
 
-apt_install = node['rails_ubuntu']['apt_install']
+apt_install = node["rails_ubuntu"]["apt_install"]
 
-bash 'apt_install' do
+bash "apt_install" do
   code <<-EOT
     #{bash_began}
 

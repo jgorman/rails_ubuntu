@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Upgrade packages.
 #
 # apt-get upgrade can hang while prompting the user for the console encoding.
@@ -8,7 +10,7 @@
 
 return if skip_recipe
 
-bash 'apt_upgrade' do
+bash "apt_upgrade" do
   code <<-EOT
     #{bash_began}
 
