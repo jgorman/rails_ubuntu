@@ -6,8 +6,3 @@
 - server_node test. Run a tiny app.
 
 - Test running everything twice.
-
-- Chef Spec tests?
-
-- Kitchen tests use attribute/defaults
-  - https://docs.chef.io/policyfile.html

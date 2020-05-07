@@ -7,20 +7,20 @@
 
 describe file("/etc/security/limits.conf") do
   it { should exist }
-  its("content") { should match(/^[*] soft nofile 65535/) }
-  its("content") { should match(/^[*] hard nofile 65535/) }
-  its("content") { should match(/^root soft nofile 65535/) }
-  its("content") { should match(/^root hard nofile 65535/) }
+  its("content") { should match(/^[*] soft nofile [1-9][0-9]*$/) }
+  its("content") { should match(/^[*] hard nofile [1-9][0-9]*$/) }
+  its("content") { should match(/^root soft nofile [1-9][0-9]*$/) }
+  its("content") { should match(/^root hard nofile [1-9][0-9]*$/) }
 end
 
 describe file("/etc/pam.d/common-session") do
   it { should exist }
-  its("content") { should match(/^session required pam_limits.so/) }
+  its("content") { should match(/^session required pam_limits.so$/) }
 end
 
 describe file("/etc/sysctl.conf") do
   it { should exist }
-  its("content") { should match(/^fs.inotify.max_user_watches=524288/) }
+  its("content") { should match(/^fs.inotify.max_user_watches=[1-9][0-9]*$/) }
 end
 
 describe file("/root/.bash_aliases") do
@@ -39,7 +39,7 @@ end
 
 describe command("/home/vagrant/.rbenv/shims/ruby --version") do
   its("exit_status") { should cmp 0 }
-  its("stdout") { should match(/^ruby 2\.7\.1/) }
+  its("stdout") { should match(/^ruby [2-9]\.[0-9]/) }
 end
 
 describe command("/home/vagrant/.rbenv/shims/gem list") do
@@ -49,7 +49,7 @@ end
 
 describe command("node --version") do
   its("exit_status") { should cmp 0 }
-  its("stdout") { should match(/^v12/) }
+  its("stdout") { should match(/^v[1-9][0-9]/) }
 end
 
 describe service("redis-server") do
