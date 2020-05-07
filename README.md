@@ -174,22 +174,32 @@ node.default["rails_ubuntu"]["apt_install"] += " sqlite3"
 
 ## `tune` - Tune OS limits ##
 
+Attributes: `nofile`, `inotify`
+
 Update the number of open files allowed, which takes effect
-on the next server reboot. Set `nofile = 0` to disable this.
+on the next server reboot. Set to zero to disable this.
+
+```ruby
+node.default["rails_ubuntu"]["nofile"] = 0
+```
 
 Update the number of files that can be watched for changes.
-Set `inotify = 0` to disable this.
+Set to zero to disable this.
+
+```ruby
+node.default["rails_ubuntu"]["inotify"] = 0
+```
 
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
-For those of us with muscle memory. You can set `bash_aliases` with your own bash shortcuts. See the `setup_test` recipe for an example.
-
 Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
+
+For those of us with muscle memory. You can set `bash_aliases` with your own bash shortcuts. See the `setup_test` recipe for an example.
 
 You can replace or extend the `.bash_aliases` file content.
 See [Attribute Defaults](#attribute-defaults) for the current list.
-
+`
 ```ruby
 node.default["rails_ubuntu"]["bash_aliases"] += <<EOT
 export PS1='\\u@\\h \\w \\\$ '
@@ -209,9 +219,9 @@ rg --hidden DATABASE_URL
 
 ## `ruby` - Build Ruby with Rbenv ##
 
-Attributes: `ruby_version`, `deploy_user`, `deploy_group`, `ruby_libs`
+Attributes: `ruby_version`, `ruby_libs`, `deploy_user`, `deploy_home`
 
-You can set your preferred ruby version.
+Install Rbenv and build your ruby version.
 
 ```ruby
 node.default["rails_ubuntu"]["ruby_version"] = "2.7.1"
@@ -245,18 +255,20 @@ node.default["rails_ubuntu"]["redis_safe"] = false
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
-Attributes: `deploy_user`, `deploy_group`
+Attributes:
 
-- `server_name` = node["fqdn"]
-- `app_type`    = "rails" # rails | node
-- `app_env`     = "production"
-- `app_startup` = "app.js"
-- `app_name`    = "myapp"
-- `nginx_site`  = app_name
-- `deploy_home` = "/home/<deploy_user>"
-- `deploy_to`   = "<deploy_home>/<app_name>"
-- `app_root`    = "<deploy_to>/current"
-- `app_public`  = "<app_root>/public"
+- `deploy_user`   = "vagrant"
+- `deploy_group`  = "<deploy_user>"
+- `server_name`   = node["fqdn"]
+- `app_type`      = "rails" # rails | node
+- `app_env`       = "production"
+- `app_startup`   = "app.js"
+- `app_name`      = "myapp"
+- `nginx_site`    = app_name
+- `deploy_home`   = "/home/<deploy_user>"
+- `deploy_to`     = "<deploy_home>/<app_name>"
+- `app_root`      = "<deploy_to>/current"
+- `app_public`    = "<app_root>/public"
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
@@ -292,26 +304,28 @@ Your template has access to all of the attributes listed above.
 
 Attributes: `db_type` (postgres | mysql)
 
+Set `db_type` to "postgres" or "mysql" to call the appropriate recipe.
+If `db_type` is not set, skip database setup.
+
+
+## `postgres` - Install Postgres and create database ##
+
 Attributes: `db_user`, `db_password`, `db_name`, `db_safe`
 
-If `db_type` is not set, skip database setup.
+Postgres setup can be called directly or via the `database` recipe.
 
 Set `db_user`, `db_password` and `db_name` to create
 the empty production database owned by `db_user`.
 
-By default the database servers play it safe and only listen to
-server local connections. You can open them up to outside connections.
+By default the postgres server plays it safe and only listens to
+server local connections. You can open up to outside connections.
 
 ```ruby
 node.default["rails_ubuntu"]["db_safe"] = false
 ```
 
-## `postgres` - Install Postgres and create database ##
-
-Postgres setup can be called directly or via the `database` recipe.
-
-You can gain access to the `postgres` Postgres database role from
-the `postgres` unix user.
+You can gain access to the `postgres` Postgres database superuser
+role from the `postgres` unix user.
 
 ```
 sudo su postgres -c psql
@@ -319,9 +333,21 @@ sudo su postgres -c psql
 
 ## `mysql` - Install MySQL and create database ##
 
+Attributes: `db_user`, `db_password`, `db_name`, `db_safe`
+
 MySQL setup can be called directly or via the `database` recipe.
 
-You can gain access to the `root` MySQL database user from
+Set `db_user`, `db_password` and `db_name` to create
+the empty production database owned by `db_user`.
+
+By default the mysql server plays it safe and only listens to
+server local connections. You can open up to outside connections.
+
+```ruby
+node.default["rails_ubuntu"]["db_safe"] = false
+```
+
+You can gain access to the `root` MySQL database superuser from
 the `root` unix user.
 
 ```
@@ -340,10 +366,14 @@ mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "
 
 Access the data interface on port 6033.
 
-Set `proxysql_ssl == true`, to configure the data interface for
+Set `proxysql_ssl = true`, to configure the data interface for
 ssl transport. This does not protect the socket itself from login or
 protocol attacks. Don't expose either socket to the open internet.
 Use a VPN or ssh tunnel between servers when traversing an untrusted network.
+
+```ruby
+node.default["rails_ubuntu"]["proxysql_ssl"] = true
+```
 
 ## `setup_test` - Wrapper example ##
 
