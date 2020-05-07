@@ -7,17 +7,17 @@ return if skip_recipe
 redis_safe = node["rails_ubuntu"]["redis_safe"].to_s =~ /^t/i
 
 bash "redis" do
-  code <<-EOT
+  code <<-BASH
     #{bash_began}
 
-    [ -e /etc/apt/sources.list.d/chris-lea-ubuntu-redis-server-xenial.list ] ||
+    [ -e /etc/apt/sources.list.d/chris-lea-ubuntu-redis-server-* ] ||
       add-apt-repository -y ppa:chris-lea/redis-server
 
     apt-get update -qq
     apt-get install -y -qq redis-server redis-tools
 
     #{bash_ended}
-  EOT
+  BASH
 end
 
 unless redis_safe
@@ -28,14 +28,14 @@ unless redis_safe
   end
 
   bash "redis_unbound" do
-    code <<-EOT
+    code <<~BASH
       #{bash_began("redis_unbound")}
 
       sed -i -e 's/^bind/#bind/' /etc/redis/redis.conf
       systemctl restart redis
 
       #{bash_ended("redis_unbound")}
-    EOT
+    BASH
   end
 end
 

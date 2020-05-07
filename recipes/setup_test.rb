@@ -3,11 +3,6 @@
 # Setup for test/integration/default.rb
 
 node.default["rails_ubuntu"]["app_name"]      = "activity-timer"
-node.default["rails_ubuntu"]["ruby_version"]  = "2.7.1"
-node.default["rails_ubuntu"]["node_version"]  = "12"
-node.default["rails_ubuntu"]["proxysql_version"] = "2.0"
-node.default["rails_ubuntu"]["open_files"]    = 65535
-node.default["rails_ubuntu"]["inotify"]       = 524288
 
 node.default["rails_ubuntu"]["db_type"]       = "all"
 node.default["rails_ubuntu"]["db_user"]       = "rails"
@@ -17,7 +12,7 @@ node.default["rails_ubuntu"]["db_safe"]       = false
 node.default["rails_ubuntu"]["redis_safe"]    = false
 node.default["rails_ubuntu"]["proxysql_ssl"]  = true
 
-node.default["rails_ubuntu"]["bash_aliases"]  += <<EOT
+node.default["rails_ubuntu"]["bash_aliases"]  += <<~ALIASES
 
 export PS1='\\u@\\h \\w \\\$ '
 alias peg='ps -ef | grep'
@@ -25,6 +20,7 @@ alias peg='ps -ef | grep'
 alias tf='tail -f'
 alias t9='tail -f -n 999'
 alias c='clear'
+export LESS=-X
 
 alias va='vi ~/.bash_aliases; exec bash'
 alias vb='vi ~/.bashrc; exec bash'
@@ -45,12 +41,12 @@ vi() {
   temp_title "`basename $1` "
   vim "$@"
 }
-EOT
+ALIASES
 
 # Node server testing.
 # node.default["rails_ubuntu"]["app_type"] = "node"
 # node.default["rails_ubuntu"]["app_name"] = "wifi-watch"
-# node.default["rails_ubuntu"]["app_root"] = "#{Dir.home}/wifi-watch/wifi-service"
+# node.default["rails_ubuntu"]["app_root"] = "/home/vagrant/wifi-watch/wifi-service"
 # node.default["rails_ubuntu"]["app_startup"] = "app.js"
 # include_recipe "rails_ubuntu::nginx_passenger"
 

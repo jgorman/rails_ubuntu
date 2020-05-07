@@ -7,7 +7,8 @@
 return if skip_recipe
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
-deploy_group  = node["rails_ubuntu"]["deploy_group"]
+deploy_group  = node["rails_ubuntu"]["deploy_group"] || deploy_user
+deploy_home   = node["rails_ubuntu"]["deploy_home"] || "/home/#{deploy_user}"
 
 server_name   = node["rails_ubuntu"]["server_name"]
 app_type      = node["rails_ubuntu"]["app_type"] || "rails"
@@ -15,17 +16,22 @@ rails_env     = node["rails_ubuntu"]["rails_env"]
 app_env       = node["rails_ubuntu"]["app_env"]
 app_env       = rails_env || app_env || "production"
 app_name      = node["rails_ubuntu"]["app_name"] || "myapp"
-deploy_to     = node["rails_ubuntu"]["deploy_to"] || "#{Dir.home}/#{app_name}"
+deploy_to     = node["rails_ubuntu"]["deploy_to"] || "#{deploy_home}/#{app_name}"
 app_root      = node["rails_ubuntu"]["app_root"] || "#{deploy_to}/current"
 app_public    = node["rails_ubuntu"]["app_public"] || "#{app_root}/public"
 app_startup   = node["rails_ubuntu"]["app_startup"] || "app.js"
 nginx_site    = node["rails_ubuntu"]["nginx_site"] || app_name
 
 codename      = node["lsb"]["codename"]
+# Ubuntu LTS releases
+# 16.04 xenial
+# 18.04 bionic
+# 20.04 focal
 case codename
 when "xenial", "bionic"
 else
-  raise "Untested Ubuntu version '#{codename}'"
+  chef_log("skipped. Passenger not available for #{codename}")
+  return
 end
 
 chef_log("began")
@@ -39,7 +45,7 @@ directory deploy_to do
 end
 
 bash "nginx_passenger" do
-  code <<-EOT
+  code <<~BASH
     #{bash_began}
 
     apt-key adv \
@@ -51,20 +57,20 @@ bash "nginx_passenger" do
     apt-get update -qq
 
     #{bash_ended}
-  EOT
+  BASH
 end
 
 case codename
 
 when "xenial"
   bash "nginx-install" do
-    code <<-EOT
+    code <<~BASH
       #{bash_began("nginx-install")}
 
       apt-get install -y -qq nginx-extras passenger
 
       #{bash_ended("nginx-install")}
-    EOT
+    BASH
   end
 
   replace_or_add "nginx.conf" do
@@ -74,21 +80,21 @@ when "xenial"
   end
 
   bash "passenger.conf" do
-    code <<-EOT
+    code <<~BASH
       #{bash_began("passenger.conf")}
 
-      [ -e #{Dir.home}/.rbenv ] && {
+      [ -e #{deploy_home}/.rbenv ] && {
         pc=/etc/nginx/passenger.conf
-        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{deploy_home}/.rbenv/shims/ruby;@" $pc
       }
 
       #{bash_ended("passenger.conf")}
-    EOT
+    BASH
   end
 
-when "bionic"
+when "bionic", "focal"
   bash "nginx-install" do
-    code <<-EOT
+    code <<~BASH
       #{bash_began("nginx-install")}
 
       apt-get install -y -qq nginx-extras libnginx-mod-http-passenger
@@ -97,20 +103,20 @@ when "bionic"
           /etc/nginx/modules-enabled/50-mod-http-passenger.conf
 
       #{bash_ended("nginx-install")}
-    EOT
+    BASH
   end
 
   bash "passenger.conf" do
-    code <<-EOT
+    code <<~BASH
       #{bash_began("passenger.conf")}
 
-      [ -e #{Dir.home}/.rbenv ] && {
+      [ -e #{deploy_home}/.rbenv ] && {
         pc=/etc/nginx/conf.d/mod-http-passenger.conf
-        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{deploy_home}/.rbenv/shims/ruby;@" $pc
       }
 
       #{bash_ended("passenger.conf")}
-    EOT
+    BASH
   end
 
 else
@@ -132,6 +138,7 @@ if app_type == "rails" || app_type == "node"
       app_type: app_type,
       app_env: app_env,
       app_name: app_name,
+      deploy_home: deploy_home,
       deploy_to: deploy_to,
       app_root: app_root,
       app_public: app_public,

@@ -5,53 +5,55 @@
 return if skip_recipe
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
-deploy_group  = node["rails_ubuntu"]["deploy_group"]
+deploy_home   = node["rails_ubuntu"]["deploy_home"] || "/home/#{deploy_user}"
+
 ruby_version  = node["rails_ubuntu"]["ruby_version"]
 ruby_libs     = node["rails_ubuntu"]["ruby_libs"]
 
-unless File.exist?("#{Dir.home}/.rbenv")
-  bash "rbenv" do
-    user  deploy_user
-    group deploy_group
-    code <<-EOT
-      #{bash_began("rbenv")}
-
-      git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-      echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-      echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-      git clone https://github.com/rbenv/ruby-build.git \
-        ~/.rbenv/plugins/ruby-build
-      echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
-        >> ~/.bashrc
-      git clone https://github.com/rbenv/rbenv-vars.git \
-        ~/.rbenv/plugins/rbenv-vars
-
-      #{bash_ended("rbenv")}
-    EOT
-  end
-end
-
 bash "ruby_libs" do
-  code <<-EOT
+  code <<~BASH
     #{bash_began("ruby_libs")}
 
     apt-get update -qq
     apt-get install -y -qq #{ruby_libs}
 
     #{bash_ended("ruby_libs")}
-  EOT
+  BASH
+end
+
+unless File.exist?("#{deploy_home}/.rbenv")
+  bash "rbenv" do
+    code <<~BASH
+      #{bash_began("rbenv")}
+
+      su - #{deploy_user} <<'RBENV'
+        git clone https://github.com/rbenv/rbenv.git .rbenv
+        echo >> .bashrc
+        echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> .bashrc
+        echo 'eval "$(rbenv init -)"' >> .bashrc
+        git clone https://github.com/rbenv/ruby-build.git \
+          .rbenv/plugins/ruby-build
+        echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
+          >> .bashrc
+        git clone https://github.com/rbenv/rbenv-vars.git \
+          .rbenv/plugins/rbenv-vars
+      RBENV
+
+      #{bash_ended("rbenv")}
+    BASH
+  end
 end
 
 bash "ruby_install" do
-  user  deploy_user
-  group deploy_group
-  code <<-EOT
+  code <<~BASH
     #{bash_began("ruby_install")}
 
-    ~/.rbenv/bin/rbenv install #{ruby_version}
-    ~/.rbenv/bin/rbenv global #{ruby_version}
-    ~/.rbenv/shims/gem install bundler
+    su - #{deploy_user} <<RBENV
+      .rbenv/bin/rbenv install #{ruby_version}
+      .rbenv/bin/rbenv global #{ruby_version}
+      .rbenv/shims/gem install bundler
+    RBENV
 
     #{bash_ended("ruby_install")}
-  EOT
+  BASH
 end

@@ -11,7 +11,7 @@
 return if skip_recipe
 
 bash "apt_upgrade" do
-  code <<-EOT
+  code <<-BASH
     #{bash_began}
 
     echo 'console-setup console-setup/charmap47 select UTF-8' |
@@ -25,5 +25,5 @@ bash "apt_upgrade" do
     apt-mark unhold grub-common grub-pc grub-pc-bin grub2-common
 
     #{bash_ended}
-  EOT
+  BASH
 end

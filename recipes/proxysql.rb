@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 # Install proxysql
-
 # https://proxysql.com/documentation/installing-proxysql/
 
 return if skip_recipe
@@ -10,12 +9,17 @@ pv  = node["rails_ubuntu"]["proxysql_version"]
 ssl = node["rails_ubuntu"]["proxysql_ssl"]
 cn  = node["lsb"]["codename"]
 
-node.default["rails_ubuntu"]["bash_aliases"]  += <<EOT
+# Ubuntu 20.04 focal specific version is not available yet. Using 18.04 bionic.
+if cn == "focal"
+  cn = "bionic"
+end
+
+node.default["rails_ubuntu"]["bash_aliases"]  += <<~BASH
 alias padmin='mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "'
-EOT
+BASH
 
 bash "proxysql" do
-  code <<-EOT
+  code <<~BASH
     #{bash_began}
 
     curl -sS https://repo.proxysql.com/ProxySQL/repo_pub_key | apt-key add -
@@ -26,15 +30,15 @@ bash "proxysql" do
     apt-get update -qq
     apt-get install -y -qq proxysql mysql-client
 
-    mysql -u admin -padmin -h 127.0.0.1 -P 6032 << EOT2
+    mysql -u admin -padmin -h 127.0.0.1 -P 6032 <<MYSQL
       update global_variables set variable_value = '#{ssl}'
         where variable_name = 'mysql-have_ssl';
       load mysql variables to runtime;
       save mysql variables to disk;
-EOT2
+    MYSQL
 
     #{bash_ended}
-  EOT
+  BASH
 end
 
 service "proxysql" do

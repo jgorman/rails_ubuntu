@@ -28,6 +28,10 @@ describe file("/root/.bash_aliases") do
   its("content") { should match(/^alias/) }
 end
 
+describe directory("/home/vagrant/activity-timer") do
+  it { should exist }
+end
+
 describe command("rg --version") do
   its("exit_status") { should cmp 0 }
   its("stdout") { should match(/ripgrep/) }
@@ -36,6 +40,11 @@ end
 describe command("/home/vagrant/.rbenv/shims/ruby --version") do
   its("exit_status") { should cmp 0 }
   its("stdout") { should match(/^ruby 2\.7\.1/) }
+end
+
+describe command("/home/vagrant/.rbenv/shims/gem list") do
+  its("exit_status") { should cmp 0 }
+  its("stdout") { should match(/^bundler/) }
 end
 
 describe command("node --version") do

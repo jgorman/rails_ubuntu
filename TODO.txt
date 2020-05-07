@@ -1,0 +1,13 @@
+
+- Ubuntu 20.04 passenger running.
+
+  https://www.phusionpassenger.com/library/install/nginx/install/oss/
+
+- server_node test. Run a tiny app.
+
+- Test running everything twice.
+
+- Chef Spec tests?
+
+- Kitchen tests use attribute/defaults
+  - https://docs.chef.io/policyfile.html

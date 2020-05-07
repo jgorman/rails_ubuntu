@@ -8,38 +8,43 @@
 
 module ChefLog
   def bash_began(recipe = @recipe_name)
-    <<-EOT
-      exec >>~/chef.log 2>&1
-      chmod a+w ~/chef.log 2>/dev/null
+    deploy_user = get_attr("deploy_user")
+    <<~BASH
+      exec >>~#{deploy_user}/chef.log 2>&1
+      chmod a+w ~#{deploy_user}/chef.log 2>/dev/null
       echo -e "\\n<<< Recipe #{recipe} began `date`\\n"
-    EOT
+    BASH
   end
 
   def bash_ended(recipe = @recipe_name)
-    <<-EOT
+    <<~BASH
       echo -e "\\n>>> Recipe #{recipe} ended `date`"
-    EOT
+    BASH
   end
 
   def chef_log(msg, recipe = @recipe_name)
+    deploy_user = get_attr("deploy_user")
     bash msg do
-      code <<-EOT
-        exec >>~/chef.log 2>&1
-        chmod a+w ~/chef.log 2>/dev/null
+      code <<~BASH
+        exec >>~#{deploy_user}/chef.log 2>&1
+        chmod a+w ~#{deploy_user}/chef.log 2>/dev/null
         echo -e "\\n=== Recipe #{recipe} #{msg} `date`"
-      EOT
+      BASH
     end
   end
 
   def skip_recipe
-    skip_recipes = node[@cookbook_name] && node[@cookbook_name]["skip_recipes"]
-    skip_recipes ||= ""
+    skip_recipes = get_attr("skip_recipes")
     if skip_recipes.include?(@recipe_name)
       chef_log("skipped")
       true
     else
       false
     end
+  end
+
+  def get_attr(attr)
+    (node[@cookbook_name] && node[@cookbook_name][attr]) || ""
   end
 end
 

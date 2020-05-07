@@ -53,12 +53,12 @@ if inotify > 0
   end
 
   bash "tune inotify" do
-    code <<-EOT
+    code <<-BASH
       #{bash_began}
 
       sysctl -p
 
       #{bash_ended}
-    EOT
+    BASH
   end
 end

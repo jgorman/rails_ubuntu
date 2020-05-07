@@ -7,7 +7,7 @@ return if skip_recipe
 node_version = node["rails_ubuntu"]["node_version"]
 
 bash "node" do
-  code <<-EOT
+  code <<-BASH
     #{bash_began}
 
     curl -sL https://deb.nodesource.com/setup_#{node_version}.x | bash -
@@ -20,5 +20,5 @@ bash "node" do
     apt-get install -y -qq nodejs yarn
 
     #{bash_ended}
-  EOT
+  BASH
 end

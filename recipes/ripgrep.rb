@@ -9,7 +9,7 @@
 return if skip_recipe
 
 bash "ripgrep" do
-  code <<-EOT
+  code <<-BASH
     #{bash_began}
 
     rg --version >/dev/null 2>&1 || {
@@ -19,5 +19,5 @@ bash "ripgrep" do
     }
 
     #{bash_ended}
-  EOT
+  BASH
 end
