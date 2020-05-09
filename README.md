@@ -193,7 +193,7 @@ node.default["rails_ubuntu"]["inotify"] = 0
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
-Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
+Attributes: `bash_aliases`, `deploy_user`, `deploy_group`, `deploy_home`
 
 For those of us with muscle memory. You can set `bash_aliases` with your own bash shortcuts. See the `setup_test` recipe for an example.
 
@@ -259,20 +259,20 @@ Attributes:
 
 - `deploy_user`   = "vagrant"
 - `deploy_group`  = "<deploy_user>"
+- `deploy_home`   = "/home/<deploy_user>"
 - `server_name`   = node["fqdn"]
 - `app_type`      = "rails" # rails | node
 - `app_env`       = "production"
 - `app_startup`   = "app.js"
 - `app_name`      = "myapp"
 - `nginx_site`    = app_name
-- `deploy_home`   = "/home/<deploy_user>"
 - `deploy_to`     = "<deploy_home>/<app_name>"
 - `app_root`      = "<deploy_to>/current"
 - `app_public`    = "<app_root>/public"
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
-to `app_name` in the `deploy_user`'s home directory.
+to `app_name` in the `deploy_user`'s `deploy_home` directory.
 
 A template from `rails_ubuntu/templates` is used to
 create the `/etc/nginx/sites-enabled/<nginx_site>`

@@ -3,6 +3,8 @@
 
   https://www.phusionpassenger.com/library/install/nginx/install/oss/
 
-- server_node test. Run a tiny app.
+- server_node test. Run a tiny app?
+
+- Run a config.ru in setup_test?
 
 - Test running everything twice.

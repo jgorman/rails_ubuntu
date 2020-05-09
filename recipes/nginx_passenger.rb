@@ -134,11 +134,11 @@ if app_type == "rails" || app_type == "node"
     variables(
       deploy_user: deploy_user,
       deploy_group: deploy_group,
+      deploy_home: deploy_home,
       server_name: server_name,
       app_type: app_type,
       app_env: app_env,
       app_name: app_name,
-      deploy_home: deploy_home,
       deploy_to: deploy_to,
       app_root: app_root,
       app_public: app_public,
