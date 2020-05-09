@@ -18,7 +18,7 @@ node.default["rails_ubuntu"]["bash_aliases"]  += <<~BASH
 alias padmin='mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "'
 BASH
 
-bash "proxysql" do
+bash "install proxysql" do
   code <<~BASH
     #{bash_began}
 
@@ -30,6 +30,22 @@ bash "proxysql" do
     apt-get update -qq
     apt-get install -y -qq proxysql mysql-client
 
+    #{bash_ended}
+  BASH
+end
+
+service "proxysql" do
+  action [ :enable, :start ]
+end
+
+chef_sleep "waiting for proxysql to start" do
+  seconds 3
+end
+
+bash "proxysql set ssl to #{ssl}" do
+  code <<~BASH
+    #{bash_began}
+
     mysql -u admin -padmin -h 127.0.0.1 -P 6032 <<MYSQL
       update global_variables set variable_value = '#{ssl}'
         where variable_name = 'mysql-have_ssl';
@@ -39,8 +55,4 @@ bash "proxysql" do
 
     #{bash_ended}
   BASH
-end
-
-service "proxysql" do
-  action [ :enable, :start ]
 end

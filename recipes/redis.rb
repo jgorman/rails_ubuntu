@@ -20,6 +20,10 @@ bash "redis" do
   BASH
 end
 
+service "redis-server" do
+  action [ :enable, :start ]
+end
+
 unless redis_safe
   replace_or_add "redis_unprotected" do
     path "/etc/redis/redis.conf"
@@ -32,13 +36,12 @@ unless redis_safe
       #{bash_began("redis_unbound")}
 
       sed -i -e 's/^bind/#bind/' /etc/redis/redis.conf
-      systemctl restart redis
 
       #{bash_ended("redis_unbound")}
     BASH
   end
-end
 
-service "redis-server" do
-  action [ :enable, :start ]
+  service "redis-server" do
+    action [ :restart ]
+  end
 end

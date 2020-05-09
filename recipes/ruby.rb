@@ -2,6 +2,10 @@
 
 # Build ruby with rbenv.
 
+# There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
+# $HOME is set to /root instead of /home/vagrant.
+# The workaround is "su - vagrant".
+
 return if skip_recipe
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
