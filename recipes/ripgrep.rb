@@ -7,6 +7,7 @@
 # See the Debian / Ubuntu section to install from the .deb file.
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("/usr/bin/rg")
 
 bash "ripgrep" do
   code <<-BASH

@@ -3,6 +3,7 @@
 # Build ruby with rbenv.
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("#{Dir.home}/.rbenv")
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
 deploy_group  = node["rails_ubuntu"]["deploy_group"] || deploy_user
@@ -21,28 +22,26 @@ bash "ruby_libs" do
   BASH
 end
 
-unless File.exist?("#{Dir.home}/.rbenv")
-  bash "rbenv" do
-    user  deploy_user
-    group deploy_group
-    code <<~BASH
-      #{bash_began("rbenv")}
+bash "rbenv" do
+  user  deploy_user
+  group deploy_group
+  code <<~BASH
+    #{bash_began("rbenv")}
 
-      git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-      git clone https://github.com/rbenv/ruby-build.git \
-        ~/.rbenv/plugins/ruby-build
-      git clone https://github.com/rbenv/rbenv-vars.git \
-        ~/.rbenv/plugins/rbenv-vars
+    git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+    git clone https://github.com/rbenv/ruby-build.git \
+      ~/.rbenv/plugins/ruby-build
+    git clone https://github.com/rbenv/rbenv-vars.git \
+      ~/.rbenv/plugins/rbenv-vars
 
-      echo >> ~/.bashrc
-      echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-      echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-      echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
-        >> ~/.bashrc
+    echo >> ~/.bashrc
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+    echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+    echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
+      >> ~/.bashrc
 
-      #{bash_ended("rbenv")}
-    BASH
-  end
+    #{bash_ended("rbenv")}
+  BASH
 end
 
 bash "ruby_install" do

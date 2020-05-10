@@ -4,6 +4,7 @@
 # https://proxysql.com/documentation/installing-proxysql/
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("/usr/bin/proxysql")
 
 pv  = node["rails_ubuntu"]["proxysql_version"]
 ssl = node["rails_ubuntu"]["proxysql_ssl"]

@@ -5,6 +5,7 @@
 # https://www.phusionpassenger.com/library/install/nginx/install/oss/
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("/usr/sbin/nginx")
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
 deploy_group  = node["rails_ubuntu"]["deploy_group"] || deploy_user

@@ -17,5 +17,3 @@ We fix this in libraries/chef_log skip_recipe() or set_home()
 - server_node test. Run a tiny app?
 
 - Run a config.ru in setup_test?
-
-- Test running everything twice to make sure that it is safe.

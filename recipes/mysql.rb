@@ -3,6 +3,7 @@
 # Install Mysql, create user and database.
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("/usr/bin/mysql")
 
 db_user     = node["rails_ubuntu"]["db_user"]
 db_password = node["rails_ubuntu"]["db_password"]

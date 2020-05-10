@@ -3,6 +3,7 @@
 # Install redis service.
 
 return if skip_recipe
+return chef_log("installed") if File.exist?("/usr/bin/redis-server")
 
 redis_safe = node["rails_ubuntu"]["redis_safe"].to_s =~ /^t/i
 
@@ -35,7 +36,7 @@ unless redis_safe
     code <<~BASH
       #{bash_began("redis_unbound")}
 
-      sed -i -e 's/^bind/#bind/' /etc/redis/redis.conf
+      sed -i -e 's/^bind/# bind/' /etc/redis/redis.conf
 
       #{bash_ended("redis_unbound")}
     BASH
