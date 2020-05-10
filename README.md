@@ -193,7 +193,7 @@ node.default["rails_ubuntu"]["inotify"] = 0
 
 ## `bash_aliases` - Add bash aliases to the root and deploy users ##
 
-Attributes: `bash_aliases`, `deploy_user`, `deploy_group`, `deploy_home`
+Attributes: `bash_aliases`, `deploy_user`, `deploy_group`
 
 For those of us with muscle memory. You can set `bash_aliases` with your own bash shortcuts. See the `setup_test` recipe for an example.
 
@@ -219,7 +219,7 @@ rg --hidden DATABASE_URL
 
 ## `ruby` - Build Ruby with Rbenv ##
 
-Attributes: `ruby_version`, `ruby_libs`, `deploy_user`, `deploy_home`
+Attributes: `ruby_version`, `ruby_libs`, `deploy_user`, `deploy_group`
 
 Install Rbenv and build your ruby version.
 
@@ -259,20 +259,20 @@ Attributes:
 
 - `deploy_user`   = "vagrant"
 - `deploy_group`  = "<deploy_user>"
-- `deploy_home`   = "/home/<deploy_user>"
 - `server_name`   = node["fqdn"]
 - `app_type`      = "rails" # rails | node
 - `app_env`       = "production"
 - `app_startup`   = "app.js"
 - `app_name`      = "myapp"
 - `nginx_site`    = app_name
+- `deploy_home`   = "$HOME"
 - `deploy_to`     = "<deploy_home>/<app_name>"
 - `app_root`      = "<deploy_to>/current"
 - `app_public`    = "<app_root>/public"
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
-to `app_name` in the `deploy_user`'s `deploy_home` directory.
+to `app_name` in the `deploy_user`'s `$HOME` directory.
 
 A template from `rails_ubuntu/templates` is used to
 create the `/etc/nginx/sites-enabled/<nginx_site>`
@@ -388,10 +388,20 @@ It also sets up for Chef Cookbook Kitchen testing located at
 
 See `rails_ubuntu/attributes/defaults.rb`
 
+`deploy_user` defaults to "vagrant" but may be set to any user including
+root or a user other than the `chef_run` login user.
+
+The ruby `.rbenv` installation directory and the `deploy_to` application
+directory will be owned by `deploy_user`.
+
+`deploy_home` defaults to `chef_run` login $HOME and may be set to
+any directory.
+The ruby `.rbenv` installation directory will be located in `deploy_home`.
+
 ```ruby
 default["rails_ubuntu"]["deploy_user"]    = "vagrant"
 # default["rails_ubuntu"]["deploy_group"] = "<deploy_user>"
-# default["rails_ubuntu"]["deploy_home"]  = "/home/<deploy_user>"
+# default["rails_ubuntu"]["deploy_home"]  = "$HOME"
 
 default["rails_ubuntu"]["ruby_version"]   = "2.7.1"
 default["rails_ubuntu"]["node_version"]   = "12"

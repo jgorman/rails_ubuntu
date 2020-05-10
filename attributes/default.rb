@@ -2,7 +2,7 @@
 
 default["rails_ubuntu"]["deploy_user"]    = "vagrant"
 # default["rails_ubuntu"]["deploy_group"] = "<deploy_user>"
-# default["rails_ubuntu"]["deploy_home"]  = "/home/<deploy_user>"
+# default["rails_ubuntu"]["deploy_home"]  = "$HOME"
 
 default["rails_ubuntu"]["ruby_version"]   = "2.7.1"
 default["rails_ubuntu"]["node_version"]   = "12"

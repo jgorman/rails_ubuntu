@@ -2,14 +2,10 @@
 
 # Build ruby with rbenv.
 
-# There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
-# $HOME is set to /root instead of /home/vagrant.
-# The workaround is "su - vagrant".
-
 return if skip_recipe
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
-deploy_home   = node["rails_ubuntu"]["deploy_home"] || "/home/#{deploy_user}"
+deploy_group  = node["rails_ubuntu"]["deploy_group"] || deploy_user
 
 ruby_version  = node["rails_ubuntu"]["ruby_version"]
 ruby_libs     = node["rails_ubuntu"]["ruby_libs"]
@@ -25,23 +21,24 @@ bash "ruby_libs" do
   BASH
 end
 
-unless File.exist?("#{deploy_home}/.rbenv")
+unless File.exist?("#{Dir.home}/.rbenv")
   bash "rbenv" do
+    user  deploy_user
+    group deploy_group
     code <<~BASH
       #{bash_began("rbenv")}
 
-      su - #{deploy_user} <<'RBENV'
-        git clone https://github.com/rbenv/rbenv.git .rbenv
-        echo >> .bashrc
-        echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> .bashrc
-        echo 'eval "$(rbenv init -)"' >> .bashrc
-        git clone https://github.com/rbenv/ruby-build.git \
-          .rbenv/plugins/ruby-build
-        echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
-          >> .bashrc
-        git clone https://github.com/rbenv/rbenv-vars.git \
-          .rbenv/plugins/rbenv-vars
-      RBENV
+      git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+      git clone https://github.com/rbenv/ruby-build.git \
+        ~/.rbenv/plugins/ruby-build
+      git clone https://github.com/rbenv/rbenv-vars.git \
+        ~/.rbenv/plugins/rbenv-vars
+
+      echo >> ~/.bashrc
+      echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
+      echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+      echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' \
+        >> ~/.bashrc
 
       #{bash_ended("rbenv")}
     BASH
@@ -49,14 +46,14 @@ unless File.exist?("#{deploy_home}/.rbenv")
 end
 
 bash "ruby_install" do
+  user  deploy_user
+  group deploy_group
   code <<~BASH
     #{bash_began("ruby_install")}
 
-    su - #{deploy_user} <<RBENV
-      .rbenv/bin/rbenv install #{ruby_version}
-      .rbenv/bin/rbenv global #{ruby_version}
-      .rbenv/shims/gem install bundler
-    RBENV
+    ~/.rbenv/bin/rbenv install #{ruby_version}
+    ~/.rbenv/bin/rbenv global #{ruby_version}
+    ~/.rbenv/shims/gem install bundler
 
     #{bash_ended("ruby_install")}
   BASH

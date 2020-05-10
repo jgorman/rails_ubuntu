@@ -7,11 +7,12 @@
 #####
 
 module ChefLog
+
   def bash_began(recipe = @recipe_name)
-    deploy_user = get_attr("deploy_user")
+    set_home()
     <<~BASH
-      exec >>~#{deploy_user}/chef.log 2>&1
-      chmod a+w ~#{deploy_user}/chef.log 2>/dev/null
+      exec >>~/chef.log 2>&1
+      chmod a+w ~/chef.log 2>/dev/null
       echo -e "\\n<<< Recipe #{recipe} began `date`\\n"
     BASH
   end
@@ -23,18 +24,19 @@ module ChefLog
   end
 
   def chef_log(msg, recipe = @recipe_name)
-    deploy_user = get_attr("deploy_user")
+    set_home()
     bash msg do
       code <<~BASH
-        exec >>~#{deploy_user}/chef.log 2>&1
-        chmod a+w ~#{deploy_user}/chef.log 2>/dev/null
+        exec >>~/chef.log 2>&1
+        chmod a+w ~/chef.log 2>/dev/null
         echo -e "\\n=== Recipe #{recipe} #{msg} `date`"
       BASH
     end
   end
 
   def skip_recipe
-    skip_recipes = get_attr("skip_recipes")
+    set_home()
+    skip_recipes = get_attr("skip_recipes") || ""
     if skip_recipes.include?(@recipe_name)
       chef_log("skipped")
       true
@@ -44,8 +46,24 @@ module ChefLog
   end
 
   def get_attr(attr)
-    (node[@cookbook_name] && node[@cookbook_name][attr]) || ""
+    node[@cookbook_name] && node[@cookbook_name][attr]
   end
+
+  def set_home
+    if deploy_home = get_attr("deploy_home")
+      ENV["HOME"] = deploy_home
+    elsif ENV["HOME"] == "/root"
+
+      # There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
+      # $HOME is set to /root instead of /home/vagrant.
+      deploy_user = get_attr("deploy_user")
+      if deploy_user != 'root'
+        ENV["HOME"] = "/home/#{deploy_user}"
+      end
+
+    end
+  end
+
 end
 
 class Chef::Recipe

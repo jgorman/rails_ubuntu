@@ -3,9 +3,7 @@
 
 There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
 $HOME is set to /root instead of /home/vagrant.
-The workaround in ruby.rb:      "su - #{deploy_user}"
-The workaround in chef_log.rb:  ">>~#{deploy_user}/chef.log"
-The workaround elsewhere:       "#{deploy_home}/.rbenv"
+We fix this in libraries/chef_log skip_recipe() or set_home()
 
 
         Todo
@@ -20,4 +18,4 @@ The workaround elsewhere:       "#{deploy_home}/.rbenv"
 
 - Run a config.ru in setup_test?
 
-- Test running everything twice.
+- Test running everything twice to make sure that it is safe.

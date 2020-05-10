@@ -8,7 +8,6 @@ return if skip_recipe
 
 deploy_user   = node["rails_ubuntu"]["deploy_user"]
 deploy_group  = node["rails_ubuntu"]["deploy_group"] || deploy_user
-deploy_home   = node["rails_ubuntu"]["deploy_home"] || "/home/#{deploy_user}"
 
 server_name   = node["rails_ubuntu"]["server_name"]
 app_type      = node["rails_ubuntu"]["app_type"] || "rails"
@@ -16,7 +15,7 @@ rails_env     = node["rails_ubuntu"]["rails_env"]
 app_env       = node["rails_ubuntu"]["app_env"]
 app_env       = rails_env || app_env || "production"
 app_name      = node["rails_ubuntu"]["app_name"] || "myapp"
-deploy_to     = node["rails_ubuntu"]["deploy_to"] || "#{deploy_home}/#{app_name}"
+deploy_to     = node["rails_ubuntu"]["deploy_to"] || "#{Dir.home}/#{app_name}"
 app_root      = node["rails_ubuntu"]["app_root"] || "#{deploy_to}/current"
 app_public    = node["rails_ubuntu"]["app_public"] || "#{app_root}/public"
 app_startup   = node["rails_ubuntu"]["app_startup"] || "app.js"
@@ -83,9 +82,9 @@ when "xenial"
     code <<~BASH
       #{bash_began("passenger.conf")}
 
-      [ -e #{deploy_home}/.rbenv ] && {
+      [ -e #{Dir.home}/.rbenv ] && {
         pc=/etc/nginx/passenger.conf
-        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{deploy_home}/.rbenv/shims/ruby;@" $pc
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
       }
 
       #{bash_ended("passenger.conf")}
@@ -110,9 +109,9 @@ when "bionic", "focal"
     code <<~BASH
       #{bash_began("passenger.conf")}
 
-      [ -e #{deploy_home}/.rbenv ] && {
+      [ -e #{Dir.home}/.rbenv ] && {
         pc=/etc/nginx/conf.d/mod-http-passenger.conf
-        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{deploy_home}/.rbenv/shims/ruby;@" $pc
+        sed -i -e "s@^passenger_ruby.*@passenger_ruby #{Dir.home}/.rbenv/shims/ruby;@" $pc
       }
 
       #{bash_ended("passenger.conf")}
@@ -134,7 +133,7 @@ if app_type == "rails" || app_type == "node"
     variables(
       deploy_user: deploy_user,
       deploy_group: deploy_group,
-      deploy_home: deploy_home,
+      deploy_home: Dir.home,
       server_name: server_name,
       app_type: app_type,
       app_env: app_env,
