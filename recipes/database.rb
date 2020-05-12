@@ -8,12 +8,12 @@ db_type = node["rails_ubuntu"]["db_type"]
 
 case db_type
 when "postgres"
-  include_recipe "::postgres"
+  include_recipe "rails_ubuntu::postgres"
 when "mysql"
-  include_recipe "::mysql"
+  include_recipe "rails_ubuntu::mysql"
 when "all"
-  include_recipe "::postgres"
-  include_recipe "::mysql"
+  include_recipe "rails_ubuntu::postgres"
+  include_recipe "rails_ubuntu::mysql"
 else
   chef_log("skipped")
 end
