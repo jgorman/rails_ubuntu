@@ -3,11 +3,11 @@
 # Install node and yarn.
 
 return if skip_recipe
-return chef_log("installed") if File.exist?("/usr/bin/node")
+return chef_log('installed') if File.exist?('/usr/bin/node')
 
-node_version = node["rails_ubuntu"]["node_version"]
+node_version = node['rails_ubuntu']['node_version']
 
-bash "node" do
+bash 'node' do
   code <<-BASH
     #{bash_began}
 

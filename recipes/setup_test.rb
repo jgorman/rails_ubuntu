@@ -2,17 +2,17 @@
 
 # Setup for test/integration/default.rb
 
-node.default["rails_ubuntu"]["app_name"]      = "activity-timer"
+node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 
-node.default["rails_ubuntu"]["db_type"]       = "all"
-node.default["rails_ubuntu"]["db_user"]       = "rails"
-node.default["rails_ubuntu"]["db_password"]   = "rails123"
-node.default["rails_ubuntu"]["db_name"]       = "activity_timer_prod"
-node.default["rails_ubuntu"]["db_safe"]       = false
-node.default["rails_ubuntu"]["redis_safe"]    = false
-node.default["rails_ubuntu"]["proxysql_ssl"]  = true
+node.default['rails_ubuntu']['db_type']       = 'all'
+node.default['rails_ubuntu']['db_user']       = 'rails'
+node.default['rails_ubuntu']['db_password']   = 'rails123'
+node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
+node.default['rails_ubuntu']['db_safe']       = false
+node.default['rails_ubuntu']['redis_safe']    = false
+node.default['rails_ubuntu']['proxysql_ssl']  = true
 
-node.default["rails_ubuntu"]["bash_aliases"]  += <<~ALIASES
+node.default['rails_ubuntu']['bash_aliases'] += <<~ALIASES
 
 export PS1='\\u@\\h \\w \\\$ '
 alias peg='ps -ef | grep'
@@ -56,5 +56,5 @@ ALIASES
 #  cookbook "rails_ubuntu"
 # end
 
-include_recipe "rails_ubuntu::server_rails"
-include_recipe "rails_ubuntu::proxysql"
+include_recipe 'rails_ubuntu::server_rails'
+include_recipe 'rails_ubuntu::proxysql'

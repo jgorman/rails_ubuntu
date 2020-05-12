@@ -3,11 +3,11 @@
 # Install redis service.
 
 return if skip_recipe
-return chef_log("installed") if File.exist?("/usr/bin/redis-server")
+return chef_log('installed') if File.exist?('/usr/bin/redis-server')
 
-redis_safe = node["rails_ubuntu"]["redis_safe"].to_s =~ /^t/i
+redis_safe = node['rails_ubuntu']['redis_safe'].to_s =~ /^t/i
 
-bash "redis" do
+bash 'redis' do
   code <<-BASH
     #{bash_began}
 
@@ -21,28 +21,28 @@ bash "redis" do
   BASH
 end
 
-service "redis-server" do
+service 'redis-server' do
   action [ :enable, :start ]
 end
 
 unless redis_safe
-  replace_or_add "redis_unprotected" do
-    path "/etc/redis/redis.conf"
-    pattern "^protected-mode.*"
-    line "protected-mode no"
+  replace_or_add 'redis_unprotected' do
+    path '/etc/redis/redis.conf'
+    pattern '^protected-mode.*'
+    line 'protected-mode no'
   end
 
-  bash "redis_unbound" do
+  bash 'redis_unbound' do
     code <<~BASH
-      #{bash_began("redis_unbound")}
+      #{bash_began('redis_unbound')}
 
       sed -i -e 's/^bind/# bind/' /etc/redis/redis.conf
 
-      #{bash_ended("redis_unbound")}
+      #{bash_ended('redis_unbound')}
     BASH
   end
 
-  service "redis-server" do
+  service 'redis-server' do
     action [ :restart ]
   end
 end

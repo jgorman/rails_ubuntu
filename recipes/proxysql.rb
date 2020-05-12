@@ -4,22 +4,22 @@
 # https://proxysql.com/documentation/installing-proxysql/
 
 return if skip_recipe
-return chef_log("installed") if File.exist?("/usr/bin/proxysql")
+return chef_log('installed') if File.exist?('/usr/bin/proxysql')
 
-pv  = node["rails_ubuntu"]["proxysql_version"]
-ssl = node["rails_ubuntu"]["proxysql_ssl"]
-cn  = node["lsb"]["codename"]
+pv  = node['rails_ubuntu']['proxysql_version']
+ssl = node['rails_ubuntu']['proxysql_ssl']
+cn  = node['lsb']['codename']
 
 # Ubuntu 20.04 focal specific version is not available yet. Using 18.04 bionic.
-if cn == "focal"
-  cn = "bionic"
+if cn == 'focal'
+  cn = 'bionic'
 end
 
-node.default["rails_ubuntu"]["bash_aliases"]  += <<~BASH
+node.default['rails_ubuntu']['bash_aliases'] += <<~BASH
 alias padmin='mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "'
 BASH
 
-bash "install proxysql" do
+bash 'install proxysql' do
   code <<~BASH
     #{bash_began}
 
@@ -35,11 +35,11 @@ bash "install proxysql" do
   BASH
 end
 
-service "proxysql" do
+service 'proxysql' do
   action [ :enable, :start ]
 end
 
-chef_sleep "waiting for proxysql to start" do
+chef_sleep 'waiting for proxysql to start' do
   seconds 3
 end
 

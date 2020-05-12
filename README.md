@@ -152,7 +152,7 @@ any time to keep all of your servers up to date with application changes.
 You can set the `skip_recipes` attribute to skip unnecessary features.
 
 ```ruby
-node.default["rails_ubuntu"]["skip_recipes"] = "ripgrep, redis"
+node.default['rails_ubuntu']['skip_recipes'] = 'ripgrep, redis'
 ```
 
 ## Feature Recipes ##
@@ -169,7 +169,7 @@ You can replace or extend the basic package list.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
 ```ruby
-node.default["rails_ubuntu"]["apt_install"] += " sqlite3"
+node.default['rails_ubuntu']['apt_install'] += ' sqlite3'
 ```
 
 ## `tune` - Tune OS limits ##
@@ -180,14 +180,14 @@ Update the number of open files allowed, which takes effect
 on the next server reboot. Set to zero to disable this.
 
 ```ruby
-node.default["rails_ubuntu"]["nofile"] = 0
+node.default['rails_ubuntu']['nofile'] = 0
 ```
 
 Update the number of files that can be watched for changes.
 Set to zero to disable this.
 
 ```ruby
-node.default["rails_ubuntu"]["inotify"] = 0
+node.default['rails_ubuntu']['inotify'] = 0
 ```
 
 
@@ -201,7 +201,7 @@ You can replace or extend the `.bash_aliases` file content.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 `
 ```ruby
-node.default["rails_ubuntu"]["bash_aliases"] += <<EOT
+node.default['rails_ubuntu']['bash_aliases'] += <<EOT
 export PS1='\\u@\\h \\w \\\$ '
 alias peg='ps -ef | grep'
 alias c='clear'
@@ -224,14 +224,14 @@ Attributes: `ruby_version`, `ruby_libs`, `deploy_user`, `deploy_group`
 Install Rbenv and build your ruby version.
 
 ```ruby
-node.default["rails_ubuntu"]["ruby_version"] = "2.7.1"
+node.default['rails_ubuntu']['ruby_version'] = '2.7.1'
 ```
 
 You can replace or extend the ruby library packages.
 See [Attribute Defaults](#attribute-defaults) for the current list.
 
 ```ruby
-node.default["rails_ubuntu"]["ruby_libs"] += " libncurses5-dev"
+node.default['rails_ubuntu']['ruby_libs'] += ' libncurses5-dev'
 ```
 
 ## `node` - Install Node and Yarn ##
@@ -250,25 +250,25 @@ By default redis plays it safe and only listens to server local connections.
 You can open redis to outside connections.
 
 ```ruby
-node.default["rails_ubuntu"]["redis_safe"] = false
+node.default['rails_ubuntu']['redis_safe'] = false
 ```
 
 ## `nginx_passenger` - Install Nginx and Passenger ##
 
 Attributes:
 
-- `deploy_user`   = "vagrant"
-- `deploy_group`  = "<deploy_user>"
-- `deploy_home`   = "$HOME"
-- `server_name`   = node["fqdn"]
-- `app_type`      = "rails" # rails | node
-- `app_env`       = "production"
-- `app_startup`   = "app.js"
-- `app_name`      = "myapp"
+- `deploy_user`   = 'vagrant'
+- `deploy_group`  = '<deploy_user>'
+- `deploy_home`   = '$HOME'
+- `server_name`   = node['fqdn']
+- `app_type`      = 'rails' # rails | node
+- `app_env`       = 'production'
+- `app_startup`   = 'app.js'
+- `app_name`      = 'myapp'
 - `nginx_site`    = app_name
-- `deploy_to`     = "<deploy_home>/<app_name>"
-- `app_root`      = "<deploy_to>/current"
-- `app_public`    = "<app_root>/public"
+- `deploy_to`     = '<deploy_home>/<app_name>'
+- `app_root`      = '<deploy_to>/current'
+- `app_public`    = '<app_root>/public'
 
 This recipe will create the `deploy_to` directory if it does not exist.
 You can specify the `deploy_to` directory location or it will default
@@ -289,12 +289,12 @@ the recipe that includes the `nginx_passenger` recipe so that
 the nginx template resource is there to edit.
 
 ```ruby
-node.default["rails_ubuntu"]["app_name"] = "activity-timer"
-include_recipe "rails_ubuntu::server_rails"
+node.default['rails_ubuntu']['app_name'] = 'activity-timer'
+include_recipe 'rails_ubuntu::server_rails'
 
-edit_resource!(:template, "/etc/nginx/sites-enabled/activity-timer") do
-  source "nginx_rails.erb"
-  cookbook "my_wrapper"
+edit_resource!(:template, '/etc/nginx/sites-enabled/activity-timer') do
+  source 'nginx_rails.erb'
+  cookbook 'my_wrapper'
 end
 ```
 
@@ -304,7 +304,7 @@ Your template has access to all of the attributes listed above.
 
 Attributes: `db_type` (postgres | mysql)
 
-Set `db_type` to "postgres" or "mysql" to call the appropriate recipe.
+Set `db_type` to 'postgres' or 'mysql' to call the appropriate recipe.
 If `db_type` is not set, skip database setup.
 
 
@@ -321,7 +321,7 @@ By default the postgres server plays it safe and only listens to
 server local connections. You can open up to outside connections.
 
 ```ruby
-node.default["rails_ubuntu"]["db_safe"] = false
+node.default['rails_ubuntu']['db_safe'] = false
 ```
 
 You can gain access to the `postgres` Postgres database superuser
@@ -344,7 +344,7 @@ By default the mysql server plays it safe and only listens to
 server local connections. You can open up to outside connections.
 
 ```ruby
-node.default["rails_ubuntu"]["db_safe"] = false
+node.default['rails_ubuntu']['db_safe'] = false
 ```
 
 You can gain access to the `root` MySQL database superuser from
@@ -361,7 +361,7 @@ Attributes: `proxysql_version`, `proxysql_ssl`
 Access the admin interface on port 6032 to set up the hosts and users.
 
 ```
-mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt="Admin> "
+mysql -u admin -padmin -h 127.0.0.1 -P 6032 --prompt='Admin> '
 ```
 
 Access the data interface on port 6033.
@@ -372,7 +372,7 @@ protocol attacks. Don't expose either socket to the open internet.
 Use a VPN or ssh tunnel between servers when traversing an untrusted network.
 
 ```ruby
-node.default["rails_ubuntu"]["proxysql_ssl"] = true
+node.default['rails_ubuntu']['proxysql_ssl'] = true
 ```
 
 ## `setup_test` - Wrapper example ##
@@ -388,7 +388,7 @@ It also sets up for Chef Cookbook Kitchen testing located at
 
 See `rails_ubuntu/attributes/defaults.rb`
 
-`deploy_user` defaults to "vagrant" but may be set to any user including
+`deploy_user` defaults to 'vagrant' but may be set to any user including
 root or a user other than the `chef_run` login user.
 
 The ruby `.rbenv` installation directory and the `deploy_to` application
@@ -399,53 +399,53 @@ any directory.
 The ruby `.rbenv` installation directory will be located in `deploy_home`.
 
 ```ruby
-default["rails_ubuntu"]["deploy_user"]    = "vagrant"
-# default["rails_ubuntu"]["deploy_group"] = "<deploy_user>"
-# default["rails_ubuntu"]["deploy_home"]  = "$HOME"
+default['rails_ubuntu']['deploy_user']    = 'vagrant'
+# default['rails_ubuntu']['deploy_group'] = '<deploy_user>'
+# default['rails_ubuntu']['deploy_home']  = '$HOME'
 
-default["rails_ubuntu"]["ruby_version"]   = "2.7.1"
-default["rails_ubuntu"]["node_version"]   = "12"
-default["rails_ubuntu"]["proxysql_version"] = "2.0"
+default['rails_ubuntu']['ruby_version']   = '2.7.1'
+default['rails_ubuntu']['node_version']   = '12'
+default['rails_ubuntu']['proxysql_version'] = '2.0'
 
-default["rails_ubuntu"]["nofile"]         =  65535    # 0 for no effect.
-default["rails_ubuntu"]["inotify"]        = 524288    # 0 for no effect.
+default['rails_ubuntu']['nofile']         = 65535 # 0 for no effect.
+default['rails_ubuntu']['inotify']        = 524288 # 0 for no effect.
 
 # Generate /etc/nginx/sites-enabled/<nginx_site> from template.
-default["rails_ubuntu"]["server_name"]    = node["fqdn"]
-default["rails_ubuntu"]["app_type"]       = "rails"   # rails | node
-default["rails_ubuntu"]["app_env"]        = "production"
-default["rails_ubuntu"]["app_startup"]    = "app.js"  # Node app boot file.
-default["rails_ubuntu"]["app_name"]       = "myapp"
-# default["rails_ubuntu"]["nginx_site"]   = app_name
-# default["rails_ubuntu"]["deploy_to"]    = "<deploy_home>/<app_name>"
-# default["rails_ubuntu"]["app_root"]     = "<deploy_to>/current"
-# default["rails_ubuntu"]["app_public"]   = "<app_root>/public"
+default['rails_ubuntu']['server_name']    = node['fqdn']
+default['rails_ubuntu']['app_type']       = 'rails'   # rails | node
+default['rails_ubuntu']['app_env']        = 'production'
+default['rails_ubuntu']['app_startup']    = 'app.js'  # Node app boot file.
+default['rails_ubuntu']['app_name']       = 'myapp'
+# default['rails_ubuntu']['nginx_site']   = app_name
+# default['rails_ubuntu']['deploy_to']    = '<deploy_home>/<app_name>'
+# default['rails_ubuntu']['app_root']     = '<deploy_to>/current'
+# default['rails_ubuntu']['app_public']   = '<app_root>/public'
 
 # Local database server.
-default["rails_ubuntu"]["db_type"]        = "none"    # none | postgres | mysql
-# default["rails_ubuntu"]["db_user"]      =
-# default["rails_ubuntu"]["db_password"]  =
-# default["rails_ubuntu"]["db_name"]      =
-default["rails_ubuntu"]["db_safe"]        = true      # true | false
+default['rails_ubuntu']['db_type']        = 'none' # none | postgres | mysql
+# default['rails_ubuntu']['db_user']      =
+# default['rails_ubuntu']['db_password']  =
+# default['rails_ubuntu']['db_name']      =
+default['rails_ubuntu']['db_safe']        = true      # true | false
 
-default["rails_ubuntu"]["proxysql_ssl"]   = false     # false | true
+default['rails_ubuntu']['proxysql_ssl']   = false     # false | true
 
-default["rails_ubuntu"]["redis_safe"]     = true      # true | false
+default['rails_ubuntu']['redis_safe']     = true      # true | false
 
-default["rails_ubuntu"]["skip_recipes"]   = ""        # "redis bash_aliases"
+default['rails_ubuntu']['skip_recipes']   = ''        # 'redis bash_aliases'
 
-default["rails_ubuntu"]["bash_aliases"]   = <<ALIASES
+default['rails_ubuntu']['bash_aliases']   = <<ALIASES
 alias l='ls -l'
 alias la='ls -la'
 alias lc='ls -C'
 alias lt='ls -lrt'
 ALIASES
 
-default["rails_ubuntu"]["apt_install"] =
+default['rails_ubuntu']['apt_install'] =
   "git-core build-essential software-properties-common \
    vim curl apt-transport-https ca-certificates dirmngr gnupg"
 
-default["rails_ubuntu"]["ruby_libs"] =
+default['rails_ubuntu']['ruby_libs'] =
   "libcurl4-openssl-dev libffi-dev libreadline-dev libsqlite3-dev \
    libssl-dev libxml2-dev libxslt1-dev libyaml-dev sqlite3 zlib1g-dev"
 ```
@@ -471,20 +471,20 @@ the `rails_ubuntu` cookbook.
 From the Chef Cookbook Supermarket.
 
 ```ruby
-cookbook "rails_ubuntu", "~> 0.1", :supermarket
+cookbook 'rails_ubuntu', '~> 0.1', :supermarket
 ```
 
 Or use the latest Github version.
 
 ```ruby
-cookbook "rails_ubuntu", github: "jgorman/rails_ubuntu"
+cookbook 'rails_ubuntu', github: 'jgorman/rails_ubuntu'
 ```
 
 Add a line to the end of `metadata.rb` to tell Chef to load
 the `rails_ubuntu` cookbook.
 
 ```ruby
-depends "rails_ubuntu"
+depends 'rails_ubuntu'
 ```
 
 Then make a new recipe that configures your new server type.
@@ -492,14 +492,14 @@ Then make a new recipe that configures your new server type.
 ```ruby
 $ cd recipes
 $ vi myapp_recipe.rb
-node.default["rails_ubuntu"]["app_name"]      = "activity-timer"
+node.default['rails_ubuntu']['app_name']      = 'activity-timer'
 
-node.default["rails_ubuntu"]["db_type"]       = "postgres"
-node.default["rails_ubuntu"]["db_user"]       = "rails"
-node.default["rails_ubuntu"]["db_password"]   = "rails123"
-node.default["rails_ubuntu"]["db_name"]       = "activity_timer_prod"
+node.default['rails_ubuntu']['db_type']       = 'postgres'
+node.default['rails_ubuntu']['db_user']       = 'rails'
+node.default['rails_ubuntu']['db_password']   = 'rails123'
+node.default['rails_ubuntu']['db_name']       = 'activity_timer_prod'
 
-include_recipe "rails_ubuntu::server_rails"
+include_recipe 'rails_ubuntu::server_rails'
 ```
 
 You can include the `rails_ubuntu::server_rails` server recipe or only
@@ -528,7 +528,7 @@ Configure your default cookbook locations.
 
 ```bash
 $ vi ~/.chef/config.rb
-cookbook_path ["/Users/me/cookbooks"]
+cookbook_path ['/Users/me/cookbooks']
 ```
 
 Configure the Chef debug log location. The `stack-trace.log` file
@@ -542,7 +542,7 @@ level="debug"
 location="/Users/me/cookbooks/chef-run.log"
 ```
 
-For recipe debugging, `puts "Helpful debugging messages!"`
+For recipe debugging, `puts 'Helpful debugging messages!'`
 will show up in `chef-run.log`. You can `tail -f chef-run.log`
 to watch the deployment progress in real time.
 
@@ -610,9 +610,9 @@ your workstation is in, as if it was a separate workstation.
 ## Ubuntu 16.04 Private Network Vagrantfile ##
 
 ```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box       = "bento/ubuntu-16.04"
-  config.vm.hostname  = "bento16"
+Vagrant.configure('2') do |config|
+  config.vm.box       = 'bento/ubuntu-16.04'
+  config.vm.hostname  = 'bento16'
   config.vm.provider    :virtualbox do |v|
     v.cpus = 4
   end
@@ -631,9 +631,9 @@ end
 ## Ubuntu 18.04 Private Network Vagrantfile ##
 
 ```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box       = "bento/ubuntu-18.04"
-  config.vm.hostname  = "bento18"
+Vagrant.configure('2') do |config|
+  config.vm.box       = 'bento/ubuntu-18.04'
+  config.vm.hostname  = 'bento18'
   config.vm.provider    :virtualbox do |v|
     v.cpus = 4
   end
@@ -652,9 +652,9 @@ end
 ## Ubuntu 18.04 Public Network Vagrantfile ##
 
 ```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box       = "bento/ubuntu-18.04"
-  config.vm.hostname  = "public"
+Vagrant.configure('2') do |config|
+  config.vm.box       = 'bento/ubuntu-18.04'
+  config.vm.hostname  = 'public'
   config.vm.provider    :virtualbox do |v|
     v.cpus = 4
   end
@@ -667,7 +667,7 @@ You will be prompted for the network that your VM will appear on.
 You can avoid future prompts by specifying the exact bridge description string.
 
 ```ruby
-config.vm.network :public_network, bridge: "en0: Wi-Fi (AirPort)"
+config.vm.network :public_network, bridge: 'en0: Wi-Fi (AirPort)'
 ```
 
 

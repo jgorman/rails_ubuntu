@@ -35,9 +35,9 @@ module ChefLog
 
   def skip_recipe
     set_deploy_home()
-    skip_recipes = get_attr("skip_recipes") || ""
+    skip_recipes = get_attr('skip_recipes') || ''
     if skip_recipes.include?(@recipe_name)
-      chef_log("skipped")
+      chef_log('skipped')
       true
     else
       false
@@ -49,15 +49,15 @@ module ChefLog
   end
 
   def set_deploy_home
-    if deploy_home = get_attr("deploy_home")
-      ENV["HOME"] = deploy_home
-    elsif ENV["HOME"] == "/root"
+    if (deploy_home = get_attr('deploy_home'))
+      ENV['HOME'] = deploy_home
+    elsif ENV['HOME'] == '/root'
 
       # There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
       # $HOME is set to /root instead of /home/vagrant.
-      deploy_user = get_attr("deploy_user")
-      if deploy_user != "root"
-        ENV["HOME"] = "/home/#{deploy_user}"
+      deploy_user = get_attr('deploy_user')
+      if deploy_user != 'root'
+        ENV['HOME'] = "/home/#{deploy_user}"
       end
 
     end

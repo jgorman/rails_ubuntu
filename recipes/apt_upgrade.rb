@@ -10,7 +10,7 @@
 
 return if skip_recipe
 
-bash "apt_upgrade" do
+bash 'apt_upgrade' do
   code <<-BASH
     #{bash_began}
 
