@@ -140,7 +140,7 @@ any time to keep all of your servers up to date with application changes.
 ## Server Setup Recipes ##
 
 - `server_rails` - Complete Rails server includes all features.
-- `server_node` - Complete Node server without Ruby.
+- `server_node` - Complete Node server without Ruby or Redis.
 - `server_database` - Database server: Postgres or MySQL.
 - `server_postgres` - Postgres server.
 - `server_mysql` - MySQL server.
@@ -259,13 +259,13 @@ Attributes:
 
 - `deploy_user`   = "vagrant"
 - `deploy_group`  = "<deploy_user>"
+- `deploy_home`   = "$HOME"
 - `server_name`   = node["fqdn"]
 - `app_type`      = "rails" # rails | node
 - `app_env`       = "production"
 - `app_startup`   = "app.js"
 - `app_name`      = "myapp"
 - `nginx_site`    = app_name
-- `deploy_home`   = "$HOME"
 - `deploy_to`     = "<deploy_home>/<app_name>"
 - `app_root`      = "<deploy_to>/current"
 - `app_public`    = "<app_root>/public"

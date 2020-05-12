@@ -7,9 +7,8 @@
 #####
 
 module ChefLog
-
   def bash_began(recipe = @recipe_name)
-    set_home()
+    set_deploy_home()
     <<~BASH
       exec >>~/chef.log 2>&1
       chmod a+w ~/chef.log 2>/dev/null
@@ -24,7 +23,7 @@ module ChefLog
   end
 
   def chef_log(msg, recipe = @recipe_name)
-    set_home()
+    set_deploy_home()
     bash msg do
       code <<~BASH
         exec >>~/chef.log 2>&1
@@ -35,7 +34,7 @@ module ChefLog
   end
 
   def skip_recipe
-    set_home()
+    set_deploy_home()
     skip_recipes = get_attr("skip_recipes") || ""
     if skip_recipes.include?(@recipe_name)
       chef_log("skipped")
@@ -49,7 +48,7 @@ module ChefLog
     node[@cookbook_name] && node[@cookbook_name][attr]
   end
 
-  def set_home
+  def set_deploy_home
     if deploy_home = get_attr("deploy_home")
       ENV["HOME"] = deploy_home
     elsif ENV["HOME"] == "/root"
@@ -57,13 +56,12 @@ module ChefLog
       # There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
       # $HOME is set to /root instead of /home/vagrant.
       deploy_user = get_attr("deploy_user")
-      if deploy_user != 'root'
+      if deploy_user != "root"
         ENV["HOME"] = "/home/#{deploy_user}"
       end
 
     end
   end
-
 end
 
 class Chef::Recipe
