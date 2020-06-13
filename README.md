@@ -1,14 +1,14 @@
 # rails_ubuntu Chef Cookbook
 
-A Chef cookbook to provision Ubuntu for [Rails](#recipes) and
+The definitive Chef cookbook to provision Ubuntu for [Rails](#recipes) and
 [Node](#recipes) deployment using Nginx, Passenger, and Capistrano.
 
 This cookbook is modeled on the excellent Go Rails deployment guide.
 A big shout out to [Chris Oliver](https://gorails.com/users/1)!
 
-- https://gorails.com/deploy/ubuntu/18.04
+- https://gorails.com/deploy/ubuntu/20.04
 
-Tested on Ubuntu 16.04 and 18.04 with Postgres and MySQL.
+Tested on Ubuntu 16.04, 18.04, and 20.04 with Postgres and MySQL.
 
 Available from the Chef Supermarket or the latest version on Github.
 
@@ -79,11 +79,11 @@ Set up passwordless ssh from your workstation user to the deploy user.
 
 ```
 me@mymac $ brew install ssh-copy-id
-me@mymac $ ssh-copy-id vagrant@bento18
-vagrant@bento18's password:
+me@mymac $ ssh-copy-id vagrant@bento20
+vagrant@bento20's password:
 Number of key(s) added:        1
-me@mymac $ ssh vagrant@bento18
-vagrant@bento18 $
+me@mymac $ ssh vagrant@bento20
+vagrant@bento20 $
 ```
 
 
@@ -94,7 +94,7 @@ to configure and call the `rails_ubuntu` cookbook.
 
 ```
 me@mymac $ cd cookbooks/my_wrapper
-me@mymac $ chef-run vagrant@bento18 my_wrapper::myapp_recipe
+me@mymac $ chef-run vagrant@bento20 my_wrapper::myapp_recipe
 ```
 
 If you see the message
@@ -107,8 +107,8 @@ all log to `~deploy/chef.log`. You can watch the provisioning process
 run on the target server in real time.
 
 ```
-vagrant@bento18 ~ $ touch chef.log
-vagrant@bento18 ~ $ tail -f chef.log
+vagrant@bento20 ~ $ touch chef.log
+vagrant@bento20 ~ $ tail -f chef.log
 ```
 
 # 4. Deploy Your Application With Capistrano #
@@ -122,7 +122,7 @@ gem install capistrano capistrano-rails capistrano-passenger capistrano-rbenv
 Set up your application for deployment with Capistrano following
 this guide.
 
-https://gorails.com/deploy/ubuntu/18.04#capistrano
+https://gorails.com/deploy/ubuntu/20.04#capistrano
 
 Run Capistrano for the first time to set up the standard deployment
 directory structure.
@@ -199,7 +199,7 @@ For those of us with muscle memory. You can set `bash_aliases` with your own bas
 
 You can replace or extend the `.bash_aliases` file content.
 See [Attribute Defaults](#attribute-defaults) for the current list.
-`
+
 ```ruby
 node.default['rails_ubuntu']['bash_aliases'] += <<EOT
 export PS1='\\u@\\h \\w \\\$ '
@@ -549,10 +549,11 @@ to watch the deployment progress in real time.
 
 # Vagrant Setup #
 
-You can use the standard Ubuntu or Chef Bento Vagrant boxes.
+You can use the standard Chef Bento Vagrant boxes.
 
 - 16.04 Xenial https://app.vagrantup.com/bento/boxes/ubuntu-16.04
 - 18.04 Bionic https://app.vagrantup.com/bento/boxes/ubuntu-18.04
+- 20.04 Focal https://app.vagrantup.com/bento/boxes/ubuntu-20.04
 
 You will want to install Vagrant, Virtualbox and the
 Virtualbox Extension Pack.
@@ -574,8 +575,8 @@ the vm, and get the dhcp assigned ip address. You can assign a name to
 the ip address in `/etc/hosts`.
 
 ```
-me@mymac $ mkdir bento18
-me@mymac $ cd bento18
+me@mymac $ mkdir bento20
+me@mymac $ cd bento20
 me@mymac $ vi Vagrantfile
 me@mymac $ vagrant up
 me@mymac $ vagrant ssh -c 'ip addr show' | grep 'inet '
@@ -583,9 +584,9 @@ me@mymac $ vagrant ssh -c 'ip addr show' | grep 'inet '
         inet 172.28.128.17  netmask 255.255.255.0  broadcast 172.28.128.255
         inet 127.0.0.1  netmask 255.0.0.0
 me@mymac $ sudo vi /etc/hosts
-172.28.128.17 bento18
-me@mymac $ ssh vagrant@bento18
-vagrant@bento18 $
+172.28.128.17 bento20
+me@mymac $ ssh vagrant@bento20
+vagrant@bento20 $
 ```
 
 If you get a `permission denied (publickey)` error when logging in with
@@ -593,9 +594,9 @@ a password, you may want to enable this.
 
 ```
 me@mymac $ vagrant ssh
-vagrant@bento18 $ sudo vi /etc/ssh/sshd_config
+vagrant@bento20 $ sudo vi /etc/ssh/sshd_config
 PasswordAuthentication yes
-vagrant@bento18 $ sudo systemctl restart sshd
+vagrant@bento20 $ sudo systemctl restart sshd
 ```
 
 Here are some example Vagrantfile configurations.
@@ -607,12 +608,12 @@ and a Rails server, they will be able to communicate with each other.
 `Public Network` will make your VM visible within the same network that
 your workstation is in, as if it was a separate workstation.
 
-## Ubuntu 16.04 Private Network Vagrantfile ##
+## Ubuntu 20.04 Private Network Vagrantfile ##
 
 ```ruby
 Vagrant.configure('2') do |config|
-  config.vm.box       = 'bento/ubuntu-16.04'
-  config.vm.hostname  = 'bento16'
+  config.vm.box       = 'bento/ubuntu-20.04'
+  config.vm.hostname  = 'bento20'
   config.vm.provider    :virtualbox do |v|
     v.cpus = 4
   end
@@ -628,32 +629,11 @@ Vagrant.configure('2') do |config|
 end
 ```
 
-## Ubuntu 18.04 Private Network Vagrantfile ##
+## Ubuntu 20.04 Public Network Vagrantfile ##
 
 ```ruby
 Vagrant.configure('2') do |config|
-  config.vm.box       = 'bento/ubuntu-18.04'
-  config.vm.hostname  = 'bento18'
-  config.vm.provider    :virtualbox do |v|
-    v.cpus = 4
-  end
-
-  # Private network issue. https://github.com/hashicorp/vagrant/issues/3083
-  config.trigger.before [ :up, :reload, :provision ] do |trigger|
-    trigger.ruby do |env,machine|
-      `VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 2>/dev/null`
-    end
-  end
-
-  config.vm.network :private_network, type: :dhcp
-end
-```
-
-## Ubuntu 18.04 Public Network Vagrantfile ##
-
-```ruby
-Vagrant.configure('2') do |config|
-  config.vm.box       = 'bento/ubuntu-18.04'
+  config.vm.box       = 'bento/ubuntu-20.04'
   config.vm.hostname  = 'public'
   config.vm.provider    :virtualbox do |v|
     v.cpus = 4

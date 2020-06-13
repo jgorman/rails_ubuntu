@@ -27,7 +27,7 @@ codename      = node['lsb']['codename']
 # 16.04 xenial
 # 18.04 bionic
 # 20.04 focal
-unless %w(xenial bionic).include?(codename)
+unless %w(xenial bionic focal).include?(codename)
   chef_log("skipped. Passenger not available for #{codename}")
   return
 end
