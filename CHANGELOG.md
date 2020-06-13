@@ -15,17 +15,11 @@ README improvements.
 ## v0.2.0 - 2020-05-07
 
 * README improvements.
-
 * Recipe and attribute improvements.
-
 * Add nginx node templates.
-
 * Add proxysql recipe.
-
 * Add server_\* recipes.
-
 * Improved Kitchen testing.
-
 * Standardize on rubocop-rails\_config formatting.
 
 * There is a Chef Workstation 0.18.3 bug on Ubuntu 20.04.
@@ -40,6 +34,7 @@ This release notices the problem and resets $HOME to
 * Bug fixes for the redis and proxysql recipes.
 * Add guards around already installed features.
 
-## v0.2.2 - 2020-05-??
+## v1.0.0 - 2020-06-13
 
+* Support Ubuntu 20.04.
 * Standardize on cookstyle formatting.
